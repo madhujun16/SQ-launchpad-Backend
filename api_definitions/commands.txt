@@ -1,0 +1,1 @@
+openapi-generator-cli generate -i ./launchpad-api.yaml -g python-flask -o ./launchpad  --package-name launchpad_api

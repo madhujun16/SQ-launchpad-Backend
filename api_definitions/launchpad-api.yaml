@@ -1,0 +1,96 @@
+openapi: 3.0.3
+info:
+  title: Dashboard API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+
+paths:
+
+  /login:
+    post:
+      tags:
+        - login
+      summary: Login and set auth cookie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login success
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+  
+  /send/otp:
+    post:
+      tags:
+        - otp
+      summary: send otp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OtpRequest'
+      responses:
+        '200':
+          description: sent otp  successfully
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+  
+  /verify/otp:
+    post:
+      tags:
+        - otp
+      summary: verify otp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: verified otp successfully
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        username: { type: string }
+        otp: { type: number }
+    
+    OtpRequest:
+      type: object
+      properties:
+        email: {type: string}
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session_id

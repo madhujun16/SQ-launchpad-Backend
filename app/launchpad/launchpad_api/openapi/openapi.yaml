@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: Dashboard API
+  version: 1.0.0
+servers:
+- url: http://localhost:8080/api
+paths:
+  /login:
+    post:
+      operationId: login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Login success
+          headers:
+            Set-Cookie:
+              explode: false
+              schema:
+                type: string
+              style: simple
+      summary: Login and set auth cookie
+      tags:
+      - login
+      x-openapi-router-controller: launchpad_api.controllers.login_controller
+  /send/otp:
+    post:
+      operationId: send_otp_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: sent otp  successfully
+          headers:
+            Set-Cookie:
+              explode: false
+              schema:
+                type: string
+              style: simple
+      summary: send otp
+      tags:
+      - otp
+      x-openapi-router-controller: launchpad_api.controllers.otp_controller
+  /verify/otp:
+    post:
+      operationId: verify_otp_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: verified otp successfully
+          headers:
+            Set-Cookie:
+              explode: false
+              schema:
+                type: string
+              style: simple
+      summary: verify otp
+      tags:
+      - otp
+      x-openapi-router-controller: launchpad_api.controllers.otp_controller
+components:
+  schemas:
+    LoginRequest:
+      example:
+        otp: 0.8008281904610115
+        username: username
+      properties:
+        username:
+          title: username
+          type: string
+        otp:
+          title: otp
+          type: number
+      title: LoginRequest
+      type: object
+    OtpRequest:
+      example:
+        email: email
+      properties:
+        email:
+          title: email
+          type: string
+      title: OtpRequest
+      type: object
+  securitySchemes:
+    cookieAuth:
+      in: cookie
+      name: session_id
+      type: apiKey
+      x-apikeyInfoFunc: launchpad_api.controllers.security_controller.info_from_cookieAuth
