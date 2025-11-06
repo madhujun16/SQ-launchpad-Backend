@@ -49,7 +49,7 @@ def send_otp_post(body):  # noqa: E501
         return {"message": f"OTP sent successfully to {email}"}, 200
     except Exception as e:
         current_app.logger.error(f"Email send failed: {e}")
-        return {"error": str(e)}, 500
+        return {"message": str(e)}, 500
 
 def verify_otp(email,otp,expiry=300):
     record = otp_store.get(email)
@@ -80,17 +80,21 @@ def verify_otp_post(body):  # noqa: E501
     login_request = body
     if connexion.request.is_json:
         login_request = LoginRequest.from_dict(connexion.request.get_json())  # noqa: E501
-    
-    email = login_request.email
-    otp = login_request.otp
 
-    if not email or not otp:
-        return jsonify({"error":"Email and OTP required"}),400
+    try:
+        email = login_request.email
+        otp = login_request.otp
 
-    if verify_otp(email,otp):
-        resp = make_response(jsonify({"message": "Login successful"}))
-        token = encrypt_token(email)
-        resp.set_cookie("access_token", token, httponly=True, secure=False,samesite=True,max_age=3600)
-        return resp
+        if not email or not otp:
+            return jsonify({"error":"Email and OTP required"}),400
+
+        if verify_otp(email,otp):
+            resp = make_response(jsonify({"message": "Login successful"}))
+            token = encrypt_token(email)
+            resp.set_cookie("access_token", token, httponly=True, secure=False,samesite=True,max_age=3600)
+            return resp
     
-    return jsonify({"error": "Invalid or expired OTP"}), 400
+    except Exception as error:
+        print(error)
+    
+    return jsonify({"message": "Invalid or expired OTP"}), 400

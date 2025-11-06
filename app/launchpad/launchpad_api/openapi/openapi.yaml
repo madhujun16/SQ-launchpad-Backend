@@ -57,6 +57,79 @@ paths:
       tags:
       - otp
       x-openapi-router-controller: launchpad_api.controllers.otp_controller
+  /user:
+    delete:
+      operationId: user_delete
+      parameters:
+      - explode: true
+        in: query
+        name: user_id
+        required: true
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: User deleted successfully
+      summary: Delete a user
+      tags:
+      - user
+      x-openapi-router-controller: launchpad_api.controllers.user_controller
+    get:
+      operationId: user_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: List of users fetched successfully
+      summary: Get list of users
+      tags:
+      - user
+      x-openapi-router-controller: launchpad_api.controllers.user_controller
+    post:
+      operationId: user_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: User created successfully
+      summary: Create a new user
+      tags:
+      - user
+      x-openapi-router-controller: launchpad_api.controllers.user_controller
+    put:
+      operationId: user_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: User updated successfully
+      summary: Update an existing user
+      tags:
+      - user
+      x-openapi-router-controller: launchpad_api.controllers.user_controller
   /verify/otp:
     post:
       operationId: verify_otp_post
@@ -106,6 +179,37 @@ components:
           title: email
           type: string
       title: OtpRequest
+      type: object
+    UserRequest:
+      example:
+        roles:
+        - admin
+        - editor
+        name: John Doe
+        emailid: john.doe@example.com
+      properties:
+        name:
+          example: John Doe
+          title: name
+          type: string
+        emailid:
+          example: john.doe@example.com
+          format: email
+          title: emailid
+          type: string
+        roles:
+          example:
+          - admin
+          - editor
+          items:
+            type: string
+          title: roles
+          type: array
+      required:
+      - emailid
+      - name
+      - roles
+      title: UserRequest
       type: object
   securitySchemes:
     cookieAuth:

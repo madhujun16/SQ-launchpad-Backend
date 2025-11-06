@@ -75,6 +75,76 @@ paths:
             application/json:
               schema:
                 type: object
+    
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    get:
+      tags:
+        - user
+      summary: Get list of users
+      responses:
+        '200':
+          description: List of users fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    put:
+      tags:
+        - user
+      summary: Update an existing user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    delete:
+      tags:
+        - user
+      summary: Delete a user
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                
+    
+
 
 components:
   schemas:
@@ -88,6 +158,27 @@ components:
       type: object
       properties:
         email: {type: string}
+
+    UserRequest:
+      type: object
+      required:
+        - name
+        - emailid
+        - roles
+      properties:
+        name:
+          type: string
+          example: John Doe
+        emailid:
+          type: string
+          format: email
+          example: john.doe@example.com
+        roles:
+          type: array
+          items:
+            type: string
+          example: ["admin", "editor"]
+
 
   securitySchemes:
     cookieAuth:

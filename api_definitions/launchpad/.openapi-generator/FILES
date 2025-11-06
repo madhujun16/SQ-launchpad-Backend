@@ -10,13 +10,16 @@ launchpad_api/controllers/__init__.py
 launchpad_api/controllers/login_controller.py
 launchpad_api/controllers/otp_controller.py
 launchpad_api/controllers/security_controller.py
+launchpad_api/controllers/user_controller.py
 launchpad_api/encoder.py
 launchpad_api/models/__init__.py
 launchpad_api/models/base_model.py
 launchpad_api/models/login_request.py
 launchpad_api/models/otp_request.py
+launchpad_api/models/user_request.py
 launchpad_api/openapi/openapi.yaml
 launchpad_api/test/__init__.py
+launchpad_api/test/test_user_controller.py
 launchpad_api/typing_utils.py
 launchpad_api/util.py
 requirements.txt
