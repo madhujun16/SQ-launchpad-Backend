@@ -143,7 +143,305 @@ paths:
               schema:
                 type: object
                 
-    
+  /site:
+    post:
+      tags:
+        - site
+      summary: Create a new site
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteRequest'
+      responses:
+        '200':
+          description: Site created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    get:
+      tags:
+        - site
+      summary: Get list of sites     
+      responses:
+        '200':
+          description: List of sites fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    put:
+      tags:
+        - site
+      summary: Update an existing site
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteRequest'
+      responses:
+        '200':
+          description: Site updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    delete:
+      tags:
+        - site
+      summary: Delete a site
+      parameters:
+        - name: site_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Site deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /page:
+    post:
+      tags:
+        - page
+      summary: Create a new page
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PageRequest'
+      responses:
+        '200':
+          description: Page created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    get:
+      tags:
+        - page
+      summary: Get list of pages
+      parameters:
+      - name: page_name
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Name of the page to fetch sections for
+      - name: site_id
+        in: query
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: List of pages fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    put:
+      tags:
+        - page
+      summary: Update an existing page
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PageRequest'
+      responses:
+        '200':
+          description: Page updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    delete:
+      tags:
+        - page
+      summary: Delete a page
+      parameters:
+        - name: page_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Page deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+       
+  /section:
+    post:
+      tags:
+        - section
+      summary: Create a new section
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SectionRequest'
+      responses:
+        '200':
+          description: Section created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    get:
+      tags:
+        - section
+      summary: Get list of sections or selected section
+      parameters:
+      - name: section_name
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Name of the section to fetch
+      - name: page_id
+        in: query
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: List of sections fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    put:
+      tags:
+        - section
+      summary: Update an existing section
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SectionRequest'
+      responses:
+        '200':
+          description: Section updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    delete:
+      tags:
+        - section
+      summary: Delete a section
+      parameters:
+        - name: section_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Section deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+              
+  /organization:
+    post:
+      tags:
+        - organization
+      summary: Create a new organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationRequest'
+      responses:
+        '200':
+          description: Organization created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    get:
+      tags:
+        - organization
+      summary: Get list of organizations
+      parameters:
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: List of organizations fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    put:
+      tags:
+        - organization
+      summary: Update an existing organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationRequest'
+      responses:
+        '200':
+          description: Organization updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+    delete:
+      tags:
+        - organization
+      summary: Delete an organization
+      parameters:
+        - name: organization_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Organization deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+              
+
 
 
 components:
@@ -179,7 +477,76 @@ components:
             type: string
           example: ["admin", "editor"]
 
+    SiteRequest:
+      type: object
+      required:
+        - name
+        - status
+      properties:
+        name:
+          type: string
+          example: Main Website
+        status:
+          type: string
+        id:
+          type: integer
+    
+    PageRequest:
+      type: object
+      required:
+        - page_name
+        - site_id
+      properties:
+        page_name:
+          type: string
+          example: Home Page
+        site_id:
+          type: integer
+          example: 1
+        id:
+          type: integer
 
+    SectionRequest:
+      type: object
+      required:
+        - section_name
+        - page_id
+      properties:
+        section_name:
+          type: string
+          example: Hero Banner
+        page_id:
+          type: integer
+          example: 1
+        fields:
+          type: object
+    
+    OrganizationRequest:
+      type: object
+      required:
+        - name
+        - description
+        - sector
+        - unit_code
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: Acme Corporation
+        description:
+          type: string
+          example: Leading provider of industrial automation solutions.
+        sector:
+          type: string
+          example: Manufacturing
+        unit_code:
+          type: string
+          example: ACME001
+        organization_logo:
+          type: string
+          format: uri
+          example: https://example.com/uploads/acme_logo.png
   securitySchemes:
     cookieAuth:
       type: apiKey

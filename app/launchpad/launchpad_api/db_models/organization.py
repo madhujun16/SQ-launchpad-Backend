@@ -6,7 +6,7 @@ class Organization(db.Model):
     __tablename__ = 'organization'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False,unique=True)
     description = db.Column(db.Text, nullable=True)
     sector = db.Column(db.String(100), nullable=True)
     unit_code = db.Column(db.String(50), nullable=True, unique=True)

@@ -4,7 +4,7 @@ from flask import jsonify
 from launchpad_api.models.user_request import UserRequest  # noqa: E501
 from launchpad_api import util
 from db_models.user import User
-from utils.messages import message
+from utils.messages import generic_message
 
 
 
@@ -31,7 +31,8 @@ def user_get():  # noqa: E501
     """
 
     result = 400
-    payload = {"message":message.get("generic_message")}
+    payload = {"message":generic_message}
+    
     try:
         users = User.get_all_users()
 
@@ -60,7 +61,8 @@ def user_post(body):  # noqa: E501
         user_request = UserRequest.from_dict(connexion.request.get_json())  # noqa: E501
     
     result = 400
-    payload = {"message":message.get("generic_message")}
+    payload = {"message":generic_message}
+
     try:
         name = user_request.name
         email = user_request.emailid

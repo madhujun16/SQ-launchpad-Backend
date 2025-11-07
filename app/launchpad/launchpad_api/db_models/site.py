@@ -65,3 +65,30 @@ class Site(db.Model):
             exceptionstring = traceback.format_exc()
             print(exceptionstring)
             return None
+    
+    @staticmethod
+    def delete_by_id(site_id):
+        """Delete a Site record safely by its ID."""
+        try:
+            site = Site.query.get(site_id)
+            if not site:
+                return False  # Site not found
+            db.session.delete(site)
+            db.session.commit()
+            return True
+        except Exception:
+            db.session.rollback()
+            import traceback
+            exceptionstring = traceback.format_exc()
+            print(exceptionstring)
+            return False
+
+    @staticmethod
+    def get_all_sites():
+        try:
+            all_sites = Site.query.all()
+            return all_sites
+        except Exception:
+            exceptionstring = traceback.format_exc()
+            print(exceptionstring)
+            return None

@@ -31,6 +31,265 @@ paths:
       tags:
       - login
       x-openapi-router-controller: launchpad_api.controllers.login_controller
+  /organization:
+    delete:
+      operationId: organization_delete
+      parameters:
+      - explode: true
+        in: query
+        name: organization_id
+        required: true
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Organization deleted successfully
+      summary: Delete an organization
+      tags:
+      - organization
+      x-openapi-router-controller: launchpad_api.controllers.organization_controller
+    get:
+      operationId: organization_get
+      parameters:
+      - explode: true
+        in: query
+        name: organization_id
+        required: false
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: List of organizations fetched successfully
+      summary: Get list of organizations
+      tags:
+      - organization
+      x-openapi-router-controller: launchpad_api.controllers.organization_controller
+    post:
+      operationId: organization_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Organization created successfully
+      summary: Create a new organization
+      tags:
+      - organization
+      x-openapi-router-controller: launchpad_api.controllers.organization_controller
+    put:
+      operationId: organization_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Organization updated successfully
+      summary: Update an existing organization
+      tags:
+      - organization
+      x-openapi-router-controller: launchpad_api.controllers.organization_controller
+  /page:
+    delete:
+      operationId: page_delete
+      parameters:
+      - explode: true
+        in: query
+        name: page_id
+        required: true
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Page deleted successfully
+      summary: Delete a page
+      tags:
+      - page
+      x-openapi-router-controller: launchpad_api.controllers.page_controller
+    get:
+      operationId: page_get
+      parameters:
+      - description: Name of the page to fetch sections for
+        explode: true
+        in: query
+        name: page_name
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: site_id
+        required: true
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: List of pages fetched successfully
+      summary: Get list of pages
+      tags:
+      - page
+      x-openapi-router-controller: launchpad_api.controllers.page_controller
+    post:
+      operationId: page_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PageRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Page created successfully
+      summary: Create a new page
+      tags:
+      - page
+      x-openapi-router-controller: launchpad_api.controllers.page_controller
+    put:
+      operationId: page_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PageRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Page updated successfully
+      summary: Update an existing page
+      tags:
+      - page
+      x-openapi-router-controller: launchpad_api.controllers.page_controller
+  /section:
+    delete:
+      operationId: section_delete
+      parameters:
+      - explode: true
+        in: query
+        name: section_id
+        required: true
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Section deleted successfully
+      summary: Delete a section
+      tags:
+      - section
+      x-openapi-router-controller: launchpad_api.controllers.section_controller
+    get:
+      operationId: section_get
+      parameters:
+      - description: Name of the section to fetch
+        explode: true
+        in: query
+        name: section_name
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: page_id
+        required: true
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: List of sections fetched successfully
+      summary: Get list of sections or selected section
+      tags:
+      - section
+      x-openapi-router-controller: launchpad_api.controllers.section_controller
+    post:
+      operationId: section_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SectionRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Section created successfully
+      summary: Create a new section
+      tags:
+      - section
+      x-openapi-router-controller: launchpad_api.controllers.section_controller
+    put:
+      operationId: section_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SectionRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Section updated successfully
+      summary: Update an existing section
+      tags:
+      - section
+      x-openapi-router-controller: launchpad_api.controllers.section_controller
   /send/otp:
     post:
       operationId: send_otp_post
@@ -57,6 +316,79 @@ paths:
       tags:
       - otp
       x-openapi-router-controller: launchpad_api.controllers.otp_controller
+  /site:
+    delete:
+      operationId: site_delete
+      parameters:
+      - explode: true
+        in: query
+        name: site_id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Site deleted successfully
+      summary: Delete a site
+      tags:
+      - site
+      x-openapi-router-controller: launchpad_api.controllers.site_controller
+    get:
+      operationId: site_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: List of sites fetched successfully
+      summary: Get list of sites
+      tags:
+      - site
+      x-openapi-router-controller: launchpad_api.controllers.site_controller
+    post:
+      operationId: site_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Site created successfully
+      summary: Create a new site
+      tags:
+      - site
+      x-openapi-router-controller: launchpad_api.controllers.site_controller
+    put:
+      operationId: site_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Site updated successfully
+      summary: Update an existing site
+      tags:
+      - site
+      x-openapi-router-controller: launchpad_api.controllers.site_controller
   /user:
     delete:
       operationId: user_delete
@@ -210,6 +542,111 @@ components:
       - name
       - roles
       title: UserRequest
+      type: object
+    SiteRequest:
+      example:
+        name: Main Website
+        id: 0
+        status: status
+      properties:
+        name:
+          example: Main Website
+          title: name
+          type: string
+        status:
+          title: status
+          type: string
+        id:
+          title: id
+          type: integer
+      required:
+      - name
+      - status
+      title: SiteRequest
+      type: object
+    PageRequest:
+      example:
+        page_name: Home Page
+        site_id: 1
+        id: 0
+      properties:
+        page_name:
+          example: Home Page
+          title: page_name
+          type: string
+        site_id:
+          example: 1
+          title: site_id
+          type: integer
+        id:
+          title: id
+          type: integer
+      required:
+      - page_name
+      - site_id
+      title: PageRequest
+      type: object
+    SectionRequest:
+      example:
+        page_id: 1
+        section_name: Hero Banner
+        fields: "{}"
+      properties:
+        section_name:
+          example: Hero Banner
+          title: section_name
+          type: string
+        page_id:
+          example: 1
+          title: page_id
+          type: integer
+        fields:
+          title: fields
+          type: object
+      required:
+      - page_id
+      - section_name
+      title: SectionRequest
+      type: object
+    OrganizationRequest:
+      example:
+        name: Acme Corporation
+        description: Leading provider of industrial automation solutions.
+        unit_code: ACME001
+        id: 0
+        organization_logo: https://example.com/uploads/acme_logo.png
+        sector: Manufacturing
+      properties:
+        id:
+          title: id
+          type: integer
+        name:
+          example: Acme Corporation
+          title: name
+          type: string
+        description:
+          example: Leading provider of industrial automation solutions.
+          title: description
+          type: string
+        sector:
+          example: Manufacturing
+          title: sector
+          type: string
+        unit_code:
+          example: ACME001
+          title: unit_code
+          type: string
+        organization_logo:
+          example: https://example.com/uploads/acme_logo.png
+          format: uri
+          title: organization_logo
+          type: string
+      required:
+      - description
+      - name
+      - sector
+      - unit_code
+      title: OrganizationRequest
       type: object
   securitySchemes:
     cookieAuth:
