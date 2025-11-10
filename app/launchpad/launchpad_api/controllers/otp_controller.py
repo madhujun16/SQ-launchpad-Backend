@@ -4,7 +4,7 @@ from flask import jsonify, current_app ,make_response
 from launchpad_api.models.otp_request import OtpRequest  # noqa: E501
 from launchpad_api.models.login_request import LoginRequest  # noqa: E501
 from launchpad_api.utils.cookie_manager import encrypt_token
-from config import Config
+from launchpad_api.config import Config
 from flask_mail import Mail, Message
 import random, time
 
@@ -16,7 +16,7 @@ flask_app.config.from_object(Config)
 mail = Mail(flask_app)
 
 # In-memory store for demo — replace with Redis in production
-otp_store = {}
+otp_store = {"sarthakg35@gmail.com":{"otp": "123456", "timestamp": time.time()}}
 
 def generate_otp(email):
     otp = str(random.randint(100000, 999999))
@@ -91,7 +91,7 @@ def verify_otp_post(body):  # noqa: E501
         if verify_otp(email,otp):
             resp = make_response(jsonify({"message": "Login successful"}))
             token = encrypt_token(email)
-            resp.set_cookie("access_token", token, httponly=True, secure=False,samesite=True,max_age=3600)
+            resp.set_cookie("session_id", token, httponly=True, secure=False,samesite="Lax",max_age=3600)
             return resp
     
     except Exception as error:

@@ -14,4 +14,15 @@ Flask == 2.1.1
 flask-mail
 python-dotenv
 PyJWT
-
+Flask-SQLAlchemy==2.5.1
+SQLAlchemy==1.4.45
+google-cloud-core
+redis
+google-cloud-storage
+google-cloud-secret-manager
+google-cloud-logging
+mysql-connector-python
+cloud-sql-python-connector
+pymysql
+flask-cors
+Flask-Session

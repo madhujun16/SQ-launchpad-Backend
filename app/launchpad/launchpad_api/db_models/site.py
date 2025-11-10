@@ -1,30 +1,29 @@
 from datetime import datetime
-from db import db
+from launchpad_api.db import db
 import traceback
 
 class Site(db.Model):
     __tablename__ = 'site'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.String(50), nullable=False, default='active')
+    status = db.Column(db.String(50), nullable=False, default='created')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def __init__(self, name, status='active'):
-        self.name = name
+    def __init__(self, status='created'):
         self.status = status
 
     def __repr__(self):
-        return f"<Site(id={self.id}, name='{self.name}', status='{self.status}')>"
+        return f"<Site(id={self.id}, status='{self.status}')>"
 
     # --- CRUD OPERATIONS ---
 
-    def create_row(self):
+    def create_row(self,commit=True):
         """Insert a new Site record into the database."""
         try:
             db.session.add(self)
-            db.session.commit()
+            if commit and not db.session.in_transaction():
+                db.session.commit()
             return self.id
         except Exception:
             db.session.rollback()
@@ -32,10 +31,12 @@ class Site(db.Model):
             print(exceptionstring)
             return False
 
-    def update_row(self):
+    def update_row(self,commit=True):
         """Commit changes made to an existing Site record."""
         try:
-            db.session.commit()
+            db.session.add(self)
+            if commit:
+                db.session.commit()
             return True
         except Exception:
             db.session.rollback()
@@ -92,3 +93,5 @@ class Site(db.Model):
             exceptionstring = traceback.format_exc()
             print(exceptionstring)
             return None
+    
+   

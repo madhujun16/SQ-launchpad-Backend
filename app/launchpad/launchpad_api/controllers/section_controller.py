@@ -5,7 +5,8 @@ from typing import Union
 
 from launchpad_api.models.section_request import SectionRequest  # noqa: E501
 from launchpad_api import util
-
+from launchpad_api.db_models.section import Section
+from launchpad_api.utils.messages import generic_message
 
 def section_delete(section_id):  # noqa: E501
     """Delete a section
@@ -48,7 +49,32 @@ def section_post(body):  # noqa: E501
     section_request = body
     if connexion.request.is_json:
         section_request = SectionRequest.from_dict(connexion.request.get_json())  # noqa: E501
-    return 'do some magic!'
+    result = 400
+    payload = {"message":generic_message}
+
+    try:
+        name = section_request.section_name
+        page_id = section_request.page_id
+        fields = section_request.fields
+
+        section = Section(name,page_id)
+        
+        section_id = section.create_row()
+
+        # if response:
+        #     payload = {"message":"Section Created Succesfully"}
+        #     result = 200
+        # else:
+        #     payload = {"message":"Section creation failed"}
+        #     result = 400
+
+    except Exception as error:
+        print(error)
+        result = 400
+        payload = {"message":generic_message}
+
+
+    return jsonify(payload),result
 
 
 def section_put(body):  # noqa: E501

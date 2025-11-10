@@ -1,5 +1,5 @@
 from datetime import datetime
-from db import db
+from launchpad_api.db import db
 import traceback
 
 class User(db.Model):

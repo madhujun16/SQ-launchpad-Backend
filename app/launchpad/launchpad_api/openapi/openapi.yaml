@@ -4,6 +4,8 @@ info:
   version: 1.0.0
 servers:
 - url: http://localhost:8080/api
+security:
+- cookieAuth: []
 paths:
   /login:
     post:
@@ -312,6 +314,7 @@ paths:
               schema:
                 type: string
               style: simple
+      security: []
       summary: send otp
       tags:
       - otp
@@ -484,6 +487,7 @@ paths:
               schema:
                 type: string
               style: simple
+      security: []
       summary: verify otp
       tags:
       - otp
@@ -492,15 +496,15 @@ components:
   schemas:
     LoginRequest:
       example:
-        otp: 0.8008281904610115
-        username: username
+        otp: otp
+        email: email
       properties:
-        username:
-          title: username
+        email:
+          title: email
           type: string
         otp:
           title: otp
-          type: number
+          type: string
       title: LoginRequest
       type: object
     OtpRequest:
@@ -545,14 +549,9 @@ components:
       type: object
     SiteRequest:
       example:
-        name: Main Website
         id: 0
         status: status
       properties:
-        name:
-          example: Main Website
-          title: name
-          type: string
         status:
           title: status
           type: string
@@ -560,7 +559,6 @@ components:
           title: id
           type: integer
       required:
-      - name
       - status
       title: SiteRequest
       type: object
@@ -568,8 +566,32 @@ components:
       example:
         page_name: Home Page
         site_id: 1
-        id: 0
+        id: 1
+        sections:
+        - section_id: 10
+          section_name: Hero Banner
+          fields:
+          - field_id: 101
+            field_value: Welcome to our homepage
+            field_name: Heading Text
+          - field_id: 101
+            field_value: Welcome to our homepage
+            field_name: Heading Text
+        - section_id: 10
+          section_name: Hero Banner
+          fields:
+          - field_id: 101
+            field_value: Welcome to our homepage
+            field_name: Heading Text
+          - field_id: 101
+            field_value: Welcome to our homepage
+            field_name: Heading Text
+        status: approved
       properties:
+        id:
+          example: 1
+          title: id
+          type: integer
         page_name:
           example: Home Page
           title: page_name
@@ -578,12 +600,20 @@ components:
           example: 1
           title: site_id
           type: integer
-        id:
-          title: id
-          type: integer
+        status:
+          example: approved
+          title: status
+          type: string
+        sections:
+          description: List of sections belonging to the page
+          items:
+            $ref: "#/components/schemas/PageRequest_sections_inner"
+          title: sections
+          type: array
       required:
       - page_name
       - site_id
+      - status
       title: PageRequest
       type: object
     SectionRequest:
@@ -647,6 +677,60 @@ components:
       - sector
       - unit_code
       title: OrganizationRequest
+      type: object
+    PageRequest_sections_inner_fields_inner:
+      example:
+        field_id: 101
+        field_value: Welcome to our homepage
+        field_name: Heading Text
+      properties:
+        field_id:
+          example: 101
+          title: field_id
+          type: integer
+        field_name:
+          example: Heading Text
+          title: field_name
+          type: string
+        field_value:
+          example: Welcome to our homepage
+          title: field_value
+          type: string
+      required:
+      - field_name
+      - field_value
+      title: PageRequest_sections_inner_fields_inner
+      type: object
+    PageRequest_sections_inner:
+      example:
+        section_id: 10
+        section_name: Hero Banner
+        fields:
+        - field_id: 101
+          field_value: Welcome to our homepage
+          field_name: Heading Text
+        - field_id: 101
+          field_value: Welcome to our homepage
+          field_name: Heading Text
+      properties:
+        section_id:
+          example: 10
+          title: section_id
+          type: integer
+        section_name:
+          example: Hero Banner
+          title: section_name
+          type: string
+        fields:
+          description: List of fields under this section
+          items:
+            $ref: "#/components/schemas/PageRequest_sections_inner_fields_inner"
+          title: fields
+          type: array
+      required:
+      - fields
+      - section_name
+      title: PageRequest_sections_inner
       type: object
   securitySchemes:
     cookieAuth:

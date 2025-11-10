@@ -5,6 +5,9 @@ info:
 servers:
   - url: http://localhost:8080/api
 
+security:            # ✅ Root level — applies globally to all endpoints
+  - cookieAuth: []
+
 paths:
 
   /login:
@@ -35,6 +38,7 @@ paths:
       tags:
         - otp
       summary: send otp
+      security : []
       requestBody:
         required: true
         content:
@@ -58,6 +62,7 @@ paths:
       tags:
         - otp
       summary: verify otp
+      security : []
       requestBody:
         required: true
         content:
@@ -449,8 +454,8 @@ components:
     LoginRequest:
       type: object
       properties:
-        username: { type: string }
-        otp: { type: number }
+        email: { type: string }
+        otp: { type: string }
     
     OtpRequest:
       type: object
@@ -480,12 +485,8 @@ components:
     SiteRequest:
       type: object
       required:
-        - name
         - status
       properties:
-        name:
-          type: string
-          example: Main Website
         status:
           type: string
         id:
@@ -496,15 +497,54 @@ components:
       required:
         - page_name
         - site_id
+        - status
       properties:
+        id:
+          type: integer
+          example: 1
         page_name:
           type: string
-          example: Home Page
+          example: Home Page 
         site_id:
           type: integer
           example: 1
-        id:
-          type: integer
+        status:
+          type: string
+          example: approved
+        sections:
+          type: array
+          description: List of sections belonging to the page
+          items:
+            type: object
+            required:
+              - section_name
+              - fields
+            properties:
+              section_id:
+                type: integer
+                example: 10
+              section_name:
+                type: string
+                example: Hero Banner
+              fields:
+                type: array
+                description: List of fields under this section
+                items:
+                  type: object
+                  required:
+                    - field_name
+                    - field_value
+                  properties:
+                    field_id:
+                      type: integer
+                      example: 101
+                    field_name:
+                      type: string
+                      example: Heading Text
+                    field_value:
+                      type: string
+                      example: "Welcome to our homepage"
+
 
     SectionRequest:
       type: object
@@ -547,6 +587,7 @@ components:
           type: string
           format: uri
           example: https://example.com/uploads/acme_logo.png
+  
   securitySchemes:
     cookieAuth:
       type: apiKey

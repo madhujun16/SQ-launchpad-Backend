@@ -1,5 +1,5 @@
 from datetime import datetime
-from db import db
+from launchpad_api.db import db
 import traceback
 
 class Organization(db.Model):
@@ -8,8 +8,8 @@ class Organization(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False,unique=True)
     description = db.Column(db.Text, nullable=True)
-    sector = db.Column(db.String(100), nullable=True)
-    unit_code = db.Column(db.String(50), nullable=True, unique=True)
+    sector = db.Column(db.String(100), nullable=False)
+    unit_code = db.Column(db.String(50), nullable=False, unique=True)
     organization_logo = db.Column(db.String(512), nullable=True)  # store logo URL
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

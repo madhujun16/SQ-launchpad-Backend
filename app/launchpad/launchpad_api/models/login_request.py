@@ -12,25 +12,25 @@ class LoginRequest(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, username=None, otp=None):  # noqa: E501
+    def __init__(self, email=None, otp=None):  # noqa: E501
         """LoginRequest - a model defined in OpenAPI
 
-        :param username: The username of this LoginRequest.  # noqa: E501
-        :type username: str
+        :param email: The email of this LoginRequest.  # noqa: E501
+        :type email: str
         :param otp: The otp of this LoginRequest.  # noqa: E501
-        :type otp: float
+        :type otp: str
         """
         self.openapi_types = {
-            'username': str,
-            'otp': float
+            'email': str,
+            'otp': str
         }
 
         self.attribute_map = {
-            'username': 'username',
+            'email': 'email',
             'otp': 'otp'
         }
 
-        self._username = username
+        self._email = email
         self._otp = otp
 
     @classmethod
@@ -45,43 +45,43 @@ class LoginRequest(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def username(self) -> str:
-        """Gets the username of this LoginRequest.
+    def email(self) -> str:
+        """Gets the email of this LoginRequest.
 
 
-        :return: The username of this LoginRequest.
+        :return: The email of this LoginRequest.
         :rtype: str
         """
-        return self._username
+        return self._email
 
-    @username.setter
-    def username(self, username: str):
-        """Sets the username of this LoginRequest.
+    @email.setter
+    def email(self, email: str):
+        """Sets the email of this LoginRequest.
 
 
-        :param username: The username of this LoginRequest.
-        :type username: str
+        :param email: The email of this LoginRequest.
+        :type email: str
         """
 
-        self._username = username
+        self._email = email
 
     @property
-    def otp(self) -> float:
+    def otp(self) -> str:
         """Gets the otp of this LoginRequest.
 
 
         :return: The otp of this LoginRequest.
-        :rtype: float
+        :rtype: str
         """
         return self._otp
 
     @otp.setter
-    def otp(self, otp: float):
+    def otp(self, otp: str):
         """Sets the otp of this LoginRequest.
 
 
         :param otp: The otp of this LoginRequest.
-        :type otp: float
+        :type otp: str
         """
 
         self._otp = otp

@@ -3,8 +3,8 @@ import connexion
 from flask import jsonify
 from launchpad_api.models.user_request import UserRequest  # noqa: E501
 from launchpad_api import util
-from db_models.user import User
-from utils.messages import generic_message
+from launchpad_api.db_models.user import User
+from launchpad_api.utils.messages import generic_message
 
 
 

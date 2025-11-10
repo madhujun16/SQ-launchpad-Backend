@@ -12,29 +12,24 @@ class SiteRequest(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name=None, status=None, id=None):  # noqa: E501
+    def __init__(self, status=None, id=None):  # noqa: E501
         """SiteRequest - a model defined in OpenAPI
 
-        :param name: The name of this SiteRequest.  # noqa: E501
-        :type name: str
         :param status: The status of this SiteRequest.  # noqa: E501
         :type status: str
         :param id: The id of this SiteRequest.  # noqa: E501
         :type id: int
         """
         self.openapi_types = {
-            'name': str,
             'status': str,
             'id': int
         }
 
         self.attribute_map = {
-            'name': 'name',
             'status': 'status',
             'id': 'id'
         }
 
-        self._name = name
         self._status = status
         self._id = id
 
@@ -48,29 +43,6 @@ class SiteRequest(Model):
         :rtype: SiteRequest
         """
         return util.deserialize_model(dikt, cls)
-
-    @property
-    def name(self) -> str:
-        """Gets the name of this SiteRequest.
-
-
-        :return: The name of this SiteRequest.
-        :rtype: str
-        """
-        return self._name
-
-    @name.setter
-    def name(self, name: str):
-        """Sets the name of this SiteRequest.
-
-
-        :param name: The name of this SiteRequest.
-        :type name: str
-        """
-        if name is None:
-            raise ValueError("Invalid value for `name`, must not be `None`")  # noqa: E501
-
-        self._name = name
 
     @property
     def status(self) -> str:
