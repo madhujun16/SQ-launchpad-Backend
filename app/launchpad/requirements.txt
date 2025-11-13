@@ -26,3 +26,4 @@ cloud-sql-python-connector
 pymysql
 flask-cors
 Flask-Session
+gunicorn

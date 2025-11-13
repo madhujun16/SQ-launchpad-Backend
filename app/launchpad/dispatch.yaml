@@ -1,5 +1,6 @@
 dispatch:
   - url: "api.sqlaunchpad.com/*"
     service: launchpad-backend
-  - url: "*/launchpad/*"
+  - url: "*/api/*"
     service: launchpad-backend
+

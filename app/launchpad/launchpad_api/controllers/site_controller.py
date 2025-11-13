@@ -1,6 +1,6 @@
 import connexion
 from flask import jsonify
-
+import logging
 from launchpad_api.models.site_request import SiteRequest  # noqa: E501
 from launchpad_api import util
 from launchpad_api.utils.messages import generic_message
@@ -66,18 +66,20 @@ def site_get():  # noqa: E501
     try:
         all_sites = Site.get_all_sites()
         sites = []
-        if all_sites:
+
+        if all_sites is None:
+            payload = {"message":"Unable to fetch sites"}
+            result = 400
+        else:
             for site in all_sites:
                 sites.append(transform_site(site))
             
             payload = {"data":sites,"message":"Succesfully fetched sites"}
             result = 200
-        else:
-            payload = {"message":"Unable to fetch sites"}
-            result = 400
-
+            
 
     except Exception as error:
+        logging.info(error)
         print(error)
         result = 400
         payload = {"message":generic_message}

@@ -75,7 +75,7 @@ class Page(db.Model):
     
     def get_by_siteid_and_pagename(site_id,page_name):
         try:
-            page = Page.query.filter_by(Page.site_id==site_id, Page.page_name==page_name).first()
+            page = Page.query.filter(Page.site_id==site_id, Page.page_name==page_name).first()
             return page
         except Exception:
             exceptionstring = traceback.format_exc()

@@ -66,9 +66,9 @@ def user_post(body):  # noqa: E501
     try:
         name = user_request.name
         email = user_request.emailid
-        roles = user_request.roles
+        role = user_request.role
 
-        user = User(name,email)
+        user = User(name,email,role)
 
         response = user.create_row()
         

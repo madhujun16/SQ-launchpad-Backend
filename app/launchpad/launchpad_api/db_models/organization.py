@@ -2,7 +2,7 @@ from datetime import datetime
 from launchpad_api.db import db
 import traceback
 
-class Organization(db.Model):
+class   Organization(db.Model):
     __tablename__ = 'organization'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -28,7 +28,7 @@ class Organization(db.Model):
         try:
             db.session.add(self)
             db.session.commit()
-            return self.name
+            return self
         except Exception:
             exceptionstring = traceback.format_exc()
             db.session.rollback()
@@ -62,6 +62,17 @@ class Organization(db.Model):
         try:
             org = Organization.query.get(org_id)
             return org
+        except Exception:
+            exceptionstring = traceback.format_exc()
+            print(exceptionstring)
+            return None
+
+    @staticmethod
+    def get_all_orgs():
+        """Fetch an organization record safely by ID."""
+        try:
+            orgs = Organization.query.all()
+            return orgs
         except Exception:
             exceptionstring = traceback.format_exc()
             print(exceptionstring)

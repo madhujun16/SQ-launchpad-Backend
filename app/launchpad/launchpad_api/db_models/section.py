@@ -79,7 +79,7 @@ class Section(db.Model):
     @staticmethod
     def get_by_pageid_and_sectionname(page_id,section_name):
         try:
-            section = Section.query.filter_by(Section.page_id==page_id, Section.section_name==section_name).first()
+            section = Section.query.filter(Section.page_id==page_id, Section.section_name==section_name).first()
             return section
         except Exception:
             exceptionstring = traceback.format_exc()
@@ -88,7 +88,7 @@ class Section(db.Model):
     @staticmethod
     def get_by_pageid(page_id):
         try:
-            sections = Section.query.filter_by(Section.page_id==page_id).all()
+            sections = Section.query.filter(Section.page_id==page_id).all()
             return sections
         except Exception:
             exceptionstring = traceback.format_exc()

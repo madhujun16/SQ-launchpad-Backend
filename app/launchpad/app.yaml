@@ -1,9 +1,9 @@
 service: launchpad-backend
 runtime: python310
-entrypoint: gunicorn -b :$PORT main:app
+entrypoint: gunicorn -b :8080 main:app
 
 handlers:
-  - url: /launchpad/.*
+  - url: /api/.*
     redirect_http_response_code: 301
     script: auto
 
@@ -12,5 +12,5 @@ automatic_scaling:
   max_instances: 10
   target_cpu_utilization: 0.7
 
-# vpc_access_connector:
-#   name: projects/smartq-backend-784299/locations/europe-west1/connectors/smartq-backend-784299-connector
+vpc_access_connector:
+  name: projects/smartq-backend-784299/locations/europe-west1/connectors/launchpad-vpc-connector

@@ -2,9 +2,11 @@ import connexion
 from typing import Dict
 from typing import Tuple
 from typing import Union
-
+from flask import jsonify
 from launchpad_api.models.organization_request import OrganizationRequest  # noqa: E501
-from launchpad_api import util
+from launchpad_api.db_models.organization import Organization
+from launchpad_api.utils import messages,transform_data
+
 
 
 def organization_delete(organization_id):  # noqa: E501
@@ -30,7 +32,30 @@ def organization_get(organization_id=None):  # noqa: E501
 
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """
-    return 'do some magic!'
+    payload = {'message':messages.generic_message}
+    result = 400
+
+    try:
+        if organization_id == "all":
+            orgs = Organization.get_all_orgs()
+            all_orgs = transform_data.transform_orgs(orgs)
+
+            payload = {"message":"details fetched succesfully","data":all_orgs}
+            result = 200
+            
+        else:
+            org = Organization.get_by_id(organization_id)
+            _org = transform_data.transform_org(org)
+
+            payload = {"message":"details fetched succesfully","data":_org}
+            result = 200
+
+            
+
+    except Exception as error:
+        print(error)
+
+    return jsonify(payload),result
 
 
 def organization_post(body):  # noqa: E501
@@ -46,7 +71,31 @@ def organization_post(body):  # noqa: E501
     organization_request = body
     if connexion.request.is_json:
         organization_request = OrganizationRequest.from_dict(connexion.request.get_json())  # noqa: E501
-    return 'do some magic!'
+
+    payload = {'message':messages.generic_message}
+    result = 400
+    try:
+        name = organization_request.name
+        description = organization_request.description
+        sector = organization_request.sector
+        unit_code = organization_request.unit_code
+        logo = organization_request.organization_logo
+
+        organization = Organization(name,description,sector,unit_code,logo)
+
+        org = organization.create_row()
+
+        if org:
+            _org = transform_data.transform_org(org)
+            payload = {'message':"Organization created successfully","data":_org}
+            result = 200
+        else:
+            payload = {'message':"Unable to create organization"}
+            result = 400
+
+    except Exception as error:
+        print(error)
+    return jsonify(payload),result
 
 
 def organization_put(body):  # noqa: E501

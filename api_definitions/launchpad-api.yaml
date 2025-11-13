@@ -467,7 +467,7 @@ components:
       required:
         - name
         - emailid
-        - roles
+        - role
       properties:
         name:
           type: string
@@ -477,10 +477,8 @@ components:
           format: email
           example: john.doe@example.com
         roles:
-          type: array
-          items:
-            type: string
-          example: ["admin", "editor"]
+          type: integer
+          
 
     SiteRequest:
       type: object

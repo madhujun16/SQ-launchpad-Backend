@@ -2,7 +2,8 @@ from flask import request
 from connexion.exceptions import OAuthProblem
 from jwt import ExpiredSignatureError, InvalidTokenError
 from launchpad_api.utils.cookie_manager import decrypt_token
-from launchpad_api.db_models.user import User
+from launchpad_api.utils.common_functions import get_user_details
+
 
 def info_from_cookieAuth(api_key, required_scopes):
     """
@@ -20,17 +21,13 @@ def info_from_cookieAuth(api_key, required_scopes):
         email = decrypt_token(token)
         if not email:
             raise OAuthProblem("Invalid or expired access_token")
+        
+        user_details = get_user_details(email)
 
-        # 3. verify user exists in DB
-        # user = User.get_by_email(email)
-        # if not user:
-        #     raise OAuthProblem("User not found")
-
-        # 4.Return info that Connexion will attach to `token_info` or `user`
-        return {
-            "email": email,
-            "roles": ["user"],  # or user.roles if you store them
-        }
+        if not user_details:
+            raise OAuthProblem("User not found")
+        
+        return user_details
 
     except ExpiredSignatureError:
         raise OAuthProblem("Token expired")

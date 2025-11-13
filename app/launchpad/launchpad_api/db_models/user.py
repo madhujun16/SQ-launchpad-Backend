@@ -8,15 +8,15 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
+    role = db.Column(db.Integer,nullable=False)
     last_logged_in = db.Column(db.DateTime, default=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def __init__(self, name, email, last_logged_in=None):
+    def __init__(self, name, email,role):
         self.name = name
         self.email = email
-        if last_logged_in:
-            self.last_logged_in = last_logged_in
+        self.role=role
 
     def __repr__(self):
         return f"<User(id={self.id}, name='{self.name}', email='{self.email}')>"
@@ -73,7 +73,7 @@ class User(db.Model):
     def get_by_email( email):
         """Fetch a User by email."""
         try:
-            user = User.query.filter_by(User.email==email).first()
+            user = User.query.filter(User.email==email).first()
             return user
         except Exception:
             exceptionstring = traceback.format_exc()

@@ -115,7 +115,7 @@ class Field(db.Model):
     def get_by_fielid_and_sectionid(field_id,section_id):
         """Fetch a Field record safely by ID."""
         try:
-            field = Field.query.filter_by(Field.id==field_id, Field.section_id==section_id).first()
+            field = Field.query.filter(Field.id==field_id, Field.section_id==section_id).first()
             return field
         except Exception:
             exceptionstring = traceback.format_exc()
