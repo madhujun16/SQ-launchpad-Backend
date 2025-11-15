@@ -1,5 +1,4 @@
 import connexion
-from typing import Dict, Tuple, Union
 from flask import jsonify, current_app ,make_response
 from launchpad_api.models.otp_request import OtpRequest  # noqa: E501
 from launchpad_api.models.login_request import LoginRequest  # noqa: E501
@@ -36,6 +35,8 @@ def send_otp_post(body):  # noqa: E501
     if not email:
         return {"error": "Email is required"}, 400
     
+    
+    
     user = User.get_by_email(email)
 
     if not user:
@@ -57,7 +58,7 @@ def send_otp_post(body):  # noqa: E501
         current_app.logger.error(f"Email send failed: {e}")
         return {"message": str(e)}, 500
 
-dummy_emails = ['sarthakg35@gmail.com']
+dummy_emails = ['sarthak@gmail.com','madhu@gmail.com']
 
 def verify_otp(email,otp,expiry=300):
     record = otp_store.get(email)

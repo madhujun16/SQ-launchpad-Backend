@@ -12,31 +12,31 @@ class UserRequest(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, name=None, emailid=None, roles=None):  # noqa: E501
+    def __init__(self, name=None, emailid=None, role=None):  # noqa: E501
         """UserRequest - a model defined in OpenAPI
 
         :param name: The name of this UserRequest.  # noqa: E501
         :type name: str
         :param emailid: The emailid of this UserRequest.  # noqa: E501
         :type emailid: str
-        :param roles: The roles of this UserRequest.  # noqa: E501
-        :type roles: List[str]
+        :param role: The role of this UserRequest.  # noqa: E501
+        :type role: int
         """
         self.openapi_types = {
             'name': str,
             'emailid': str,
-            'roles': List[str]
+            'role': int
         }
 
         self.attribute_map = {
             'name': 'name',
             'emailid': 'emailid',
-            'roles': 'roles'
+            'role': 'role'
         }
 
         self._name = name
         self._emailid = emailid
-        self._roles = roles
+        self._role = role
 
     @classmethod
     def from_dict(cls, dikt) -> 'UserRequest':
@@ -96,24 +96,24 @@ class UserRequest(Model):
         self._emailid = emailid
 
     @property
-    def roles(self) -> List[str]:
-        """Gets the roles of this UserRequest.
+    def role(self) -> int:
+        """Gets the role of this UserRequest.
 
 
-        :return: The roles of this UserRequest.
-        :rtype: List[str]
+        :return: The role of this UserRequest.
+        :rtype: int
         """
-        return self._roles
+        return self._role
 
-    @roles.setter
-    def roles(self, roles: List[str]):
-        """Sets the roles of this UserRequest.
+    @role.setter
+    def role(self, role: int):
+        """Sets the role of this UserRequest.
 
 
-        :param roles: The roles of this UserRequest.
-        :type roles: List[str]
+        :param role: The role of this UserRequest.
+        :type role: int
         """
-        if roles is None:
-            raise ValueError("Invalid value for `roles`, must not be `None`")  # noqa: E501
+        if role is None:
+            raise ValueError("Invalid value for `role`, must not be `None`")  # noqa: E501
 
-        self._roles = roles
+        self._role = role

@@ -2,10 +2,12 @@ import connexion
 from flask import jsonify
 import logging
 from launchpad_api.models.site_request import SiteRequest  # noqa: E501
-from launchpad_api import util
 from launchpad_api.utils.messages import generic_message
 from launchpad_api.db_models.site import Site
-
+from launchpad_api.utils import transform_data
+from launchpad_api.utils.queries import get_all_site_details
+from collections import defaultdict
+import json
 
 def site_delete(site_id):  # noqa: E501
     """Delete a site
@@ -42,17 +44,7 @@ def site_delete(site_id):  # noqa: E501
 
     return jsonify(payload),result
 
-def transform_site(site):
-    _site = {}
-    _site['id'] = site.id
-    _site['name'] = site.name
-    _site['status'] = site.status
-    _site['created_at'] = site.created_at
-    _site['updated_at'] = site.updated_at
-
-    return _site
-
-def site_get():  # noqa: E501
+def site_get(id):  # noqa: E501
     """Get list of sites
 
      # noqa: E501
@@ -60,30 +52,8 @@ def site_get():  # noqa: E501
 
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """
-    result = 400
-    payload = {"message":generic_message}
-
-    try:
-        all_sites = Site.get_all_sites()
-        sites = []
-
-        if all_sites is None:
-            payload = {"message":"Unable to fetch sites"}
-            result = 400
-        else:
-            for site in all_sites:
-                sites.append(transform_site(site))
-            
-            payload = {"data":sites,"message":"Succesfully fetched sites"}
-            result = 200
-            
-
-    except Exception as error:
-        logging.info(error)
-        print(error)
-        result = 400
-        payload = {"message":generic_message}
-    return jsonify(payload),result
+    
+    return "site get api not implement yet"
 
 
 def site_post(body):  # noqa: E501
@@ -169,4 +139,45 @@ def site_put(body):  # noqa: E501
         result = 400
         payload = {"message":generic_message}
 
+    return jsonify(payload),result
+
+def site_all_get():  # noqa: E501
+    """Get list of sites
+
+     # noqa: E501
+
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message":generic_message}
+
+    try:
+        all_sites = get_all_site_details()
+        sites = defaultdict(dict)
+
+        if all_sites is None:
+            payload = {"message":"Unable to fetch sites"}
+            result = 400
+            return jsonify(payload),result
+        
+        for site in all_sites:
+            site_id = site.id
+            _site = sites.get(site_id, {})
+            _site['site_id'] = site_id
+            _site['status'] = site.status
+            if site.field_name:
+                _site[site.field_name] = json.loads(site.field_value)
+
+            sites[site_id] = _site
+        
+        payload = {"data":list(sites.values()),"message":"Succesfully fetched sites"}
+        result = 200
+            
+
+    except Exception as error:
+        logging.info(error)
+        print(error)
+        result = 400
+        payload = {"message":generic_message}
     return jsonify(payload),result

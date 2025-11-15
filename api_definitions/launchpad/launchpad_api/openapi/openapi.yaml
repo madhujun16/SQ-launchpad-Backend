@@ -343,6 +343,14 @@ paths:
       x-openapi-router-controller: launchpad_api.controllers.site_controller
     get:
       operationId: site_get
+      parameters:
+      - explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
       responses:
         "200":
           content:
@@ -392,6 +400,20 @@ paths:
       tags:
       - site
       x-openapi-router-controller: launchpad_api.controllers.site_controller
+  /site/all:
+    get:
+      operationId: site_all_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: List of sites fetched successfully
+      summary: Get list of sites
+      tags:
+      - site
+      x-openapi-router-controller: launchpad_api.controllers.site_controller
   /user:
     delete:
       operationId: user_delete
@@ -416,6 +438,14 @@ paths:
       x-openapi-router-controller: launchpad_api.controllers.user_controller
     get:
       operationId: user_get
+      parameters:
+      - explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
       responses:
         "200":
           content:
@@ -462,6 +492,20 @@ paths:
                 type: object
           description: User updated successfully
       summary: Update an existing user
+      tags:
+      - user
+      x-openapi-router-controller: launchpad_api.controllers.user_controller
+  /user/all:
+    get:
+      operationId: user_all_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: List of users fetched successfully
+      summary: Get list of users
       tags:
       - user
       x-openapi-router-controller: launchpad_api.controllers.user_controller
@@ -518,9 +562,7 @@ components:
       type: object
     UserRequest:
       example:
-        roles:
-        - admin
-        - editor
+        role: 0
         name: John Doe
         emailid: john.doe@example.com
       properties:
@@ -533,18 +575,13 @@ components:
           format: email
           title: emailid
           type: string
-        roles:
-          example:
-          - admin
-          - editor
-          items:
-            type: string
-          title: roles
-          type: array
+        role:
+          title: role
+          type: integer
       required:
       - emailid
       - name
-      - roles
+      - role
       title: UserRequest
       type: object
     SiteRequest:

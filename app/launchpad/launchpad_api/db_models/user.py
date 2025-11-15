@@ -28,7 +28,7 @@ class User(db.Model):
         try:
             db.session.add(self)
             db.session.commit()
-            return self.id
+            return self
         except Exception:
             db.session.rollback()
             exceptionstring = traceback.format_exc()

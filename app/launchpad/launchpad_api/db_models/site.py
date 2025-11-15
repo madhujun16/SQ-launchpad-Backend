@@ -22,7 +22,8 @@ class Site(db.Model):
         """Insert a new Site record into the database."""
         try:
             db.session.add(self)
-            if commit and not db.session.in_transaction():
+            db.session.flush()
+            if commit:
                 db.session.commit()
             return self.id
         except Exception:

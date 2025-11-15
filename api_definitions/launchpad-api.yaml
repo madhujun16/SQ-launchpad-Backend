@@ -104,6 +104,12 @@ paths:
       tags:
         - user
       summary: Get list of users
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string 
       responses:
         '200':
           description: List of users fetched successfully
@@ -147,7 +153,20 @@ paths:
             application/json:
               schema:
                 type: object
-                
+
+  /user/all:
+    get:
+      tags:
+        - user
+      summary: Get list of users
+      responses:
+        '200':
+          description: List of users fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object         
+  
   /site:
     post:
       tags:
@@ -170,7 +189,13 @@ paths:
     get:
       tags:
         - site
-      summary: Get list of sites     
+      summary: Get list of sites 
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string    
       responses:
         '200':
           description: List of sites fetched successfully
@@ -210,6 +235,19 @@ paths:
       responses:
         '200':
           description: Site deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /site/all:
+    get:
+      tags:
+        - site
+      summary: Get list of sites     
+      responses:
+        '200':
+          description: List of sites fetched successfully
           content:
             application/json:
               schema:
@@ -476,7 +514,7 @@ components:
           type: string
           format: email
           example: john.doe@example.com
-        roles:
+        role:
           type: integer
           
 

@@ -22,12 +22,12 @@ def info_from_cookieAuth(api_key, required_scopes):
         if not email:
             raise OAuthProblem("Invalid or expired access_token")
         
-        user_details = get_user_details(email)
+        # user_details = get_user_details(email)
 
-        if not user_details:
-            raise OAuthProblem("User not found")
+        # if not user_details:
+        #     raise OAuthProblem("User not found")
         
-        return user_details
+        return {}
 
     except ExpiredSignatureError:
         raise OAuthProblem("Token expired")

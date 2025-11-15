@@ -30,6 +30,7 @@ class Page(db.Model):
         """Insert a new Page record into the database."""
         try:
             db.session.add(self)
+            db.session.flush()
             if commit and not db.session.in_transaction():
                 db.session.commit()
             return self.id

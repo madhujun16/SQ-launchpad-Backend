@@ -7,6 +7,17 @@ from launchpad_api.models.site_request import SiteRequest  # noqa: E501
 from launchpad_api import util
 
 
+def site_all_get():  # noqa: E501
+    """Get list of sites
+
+     # noqa: E501
+
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def site_delete(site_id):  # noqa: E501
     """Delete a site
 
@@ -20,11 +31,13 @@ def site_delete(site_id):  # noqa: E501
     return 'do some magic!'
 
 
-def site_get():  # noqa: E501
+def site_get(id):  # noqa: E501
     """Get list of sites
 
      # noqa: E501
 
+    :param id: 
+    :type id: str
 
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """

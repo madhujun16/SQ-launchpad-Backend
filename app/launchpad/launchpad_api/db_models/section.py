@@ -31,6 +31,7 @@ class Section(db.Model):
         """Insert a new Section record into the database."""
         try:
             db.session.add(self)
+            db.session.flush()
             if commit and not db.session.in_transaction():
                 db.session.commit()
             return self.id

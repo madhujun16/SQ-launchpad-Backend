@@ -46,7 +46,6 @@ def transform_section(section):
 def transform_site(site):
     _site = {}
     _site['site_id'] = getattr(site, 'id', None)
-    _site['site_name'] = getattr(site, 'name', None)
     _site['status'] = getattr(site, 'status', None)
     _site['created_at'] = getattr(site, 'created_at', None)
     _site['updated_at'] = getattr(site, 'updated_at', None)

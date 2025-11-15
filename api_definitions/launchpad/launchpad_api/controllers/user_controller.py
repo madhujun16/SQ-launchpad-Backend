@@ -7,6 +7,17 @@ from launchpad_api.models.user_request import UserRequest  # noqa: E501
 from launchpad_api import util
 
 
+def user_all_get():  # noqa: E501
+    """Get list of users
+
+     # noqa: E501
+
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    return 'do some magic!'
+
+
 def user_delete(user_id):  # noqa: E501
     """Delete a user
 
@@ -20,11 +31,13 @@ def user_delete(user_id):  # noqa: E501
     return 'do some magic!'
 
 
-def user_get():  # noqa: E501
+def user_get(id):  # noqa: E501
     """Get list of users
 
      # noqa: E501
 
+    :param id: 
+    :type id: str
 
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """
