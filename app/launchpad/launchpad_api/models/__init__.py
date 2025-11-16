@@ -1,5 +1,6 @@
 # flake8: noqa
 # import models into model package
+from launchpad_api.models.generate_upload_url_post_request import GenerateUploadUrlPostRequest
 from launchpad_api.models.login_request import LoginRequest
 from launchpad_api.models.organization_request import OrganizationRequest
 from launchpad_api.models.otp_request import OtpRequest

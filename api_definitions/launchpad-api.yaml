@@ -484,8 +484,29 @@ paths:
               schema:
                 type: object
               
-
-
+  /generate-upload-url:
+      post:
+        tags:
+          - utility
+        summary: generate a signed url to upload logo
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data_identifier:
+                    type: string
+                    example: organization id
+        responses:
+          '200':
+            description: Organization created successfully
+            content:
+              application/json:
+                schema:
+                  type: object
+                
 
 components:
   schemas:

@@ -80,7 +80,7 @@ def organization_post(body):  # noqa: E501
         sector = organization_request.sector
         unit_code = organization_request.unit_code
         logo = organization_request.organization_logo
-
+        # logo = f"https://storage.googleapis.com/launchpad_logo/{org_id}.svg"
         organization = Organization(name,description,sector,unit_code,logo)
 
         org = organization.create_row()

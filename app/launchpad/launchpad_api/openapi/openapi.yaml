@@ -7,6 +7,26 @@ servers:
 security:
 - cookieAuth: []
 paths:
+  /generate-upload-url:
+    post:
+      operationId: generate_upload_url_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_generate_upload_url_post_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Organization created successfully
+      summary: generate a signed url to upload logo
+      tags:
+      - utility
+      x-openapi-router-controller: launchpad_api.controllers.utility_controller
   /login:
     post:
       operationId: login_post
@@ -714,6 +734,14 @@ components:
       - sector
       - unit_code
       title: OrganizationRequest
+      type: object
+    _generate_upload_url_post_request:
+      properties:
+        data_identifier:
+          example: organization id
+          title: data_identifier
+          type: string
+      title: _generate_upload_url_post_request
       type: object
     PageRequest_sections_inner_fields_inner:
       example:
