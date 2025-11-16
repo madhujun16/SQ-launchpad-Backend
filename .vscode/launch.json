@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "launchpad",
+        "type": "debugpy",
+        "request": "launch",
+        "module": "flask",
+        "cwd": "${workspaceFolder}/app/launchpad",
+        "env": {
+          "FLASK_APP": "main:app",
+          "FLASK_ENV": "development",
+          "GOOGLE_APPLICATION_CREDENTIALS":"/Users/sarthakgupta/Desktop/code/launchpad-all_access.json",
+          "GOOGLE_CLOUD_PROJECT":"smartq-backend-784299"
+        },
+        "args": ["run", "--no-debugger", "--no-reload"],
+        "jinja": true,
+        "console": "integratedTerminal"
+      }
+    ]
+  }
+  
