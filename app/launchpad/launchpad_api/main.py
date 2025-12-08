@@ -19,10 +19,23 @@ try:
         db_secrets.get("db_credentials")
     )
     if not db_credentials:
-        logging.warning("DB credentials not configured in secrets")
+        logging.warning("DB credentials not configured in secrets, using environment variables")
+        import os
+        db_credentials = {
+            "username": os.getenv("DB_USERNAME", "root"),
+            "password": os.getenv("DB_PASSWORD", ""),
+            "server_ip": os.getenv("DB_HOST", "localhost"),
+            "database": os.getenv("DB_NAME", "launchpad_db")
+        }
 except Exception as e:
-    logging.exception(f"Error fetching DB credentials: {e}")
-    db_credentials = {}
+    logging.warning(f"Error fetching DB credentials from secrets: {e}. Using environment variables.")
+    import os
+    db_credentials = {
+        "username": os.getenv("DB_USERNAME", "root"),
+        "password": os.getenv("DB_PASSWORD", ""),
+        "server_ip": os.getenv("DB_HOST", "localhost"),
+        "database": os.getenv("DB_NAME", "launchpad_db")
+    }
 
 launchpad_database = db_credentials.get("database", "launchpad_db")
 
@@ -142,23 +155,25 @@ def setup_db_if_not_exists(app):
         logging.info("Setting up database...")
         with app.app_context():
             if not db_credentials:
-                raise Exception("DB credentials not found in secrets")
+                logging.warning("DB credentials not available. Skipping database setup.")
+                return False
 
-            with db.engine.begin() as connection:  # 👈 begin() starts a transaction
-                for query in [q.strip() for q in launchpad_db_creation_query.split(';') if q.strip()]:
-                    logging.info(f"Executing query: {query}")
-                    try:
-                        connection.execute(text(query))
-                    except Exception as e:
-                        logging.warning(f"Query failed: {query}\n{e}")
-                        continue
+            try:
+                with db.engine.begin() as connection:  # 👈 begin() starts a transaction
+                    for query in [q.strip() for q in launchpad_db_creation_query.split(';') if q.strip()]:
+                        logging.info(f"Executing query: {query}")
+                        try:
+                            connection.execute(text(query))
+                        except Exception as e:
+                            logging.warning(f"Query failed: {query}\n{e}")
+                            continue
 
-        logging.info("Database and tables created successfully.")
-        return True
+                logging.info("Database and tables created successfully.")
+                return True
+            except Exception as e:
+                logging.warning(f"Database setup failed (this is OK if database already exists): {e}")
+                return False
     except Exception as e:
-        logging.error(f"Database setup failed: {e}")
-        return False
-
-    except Exception:
-        logging.error("Failed to create database:\n%s", traceback.format_exc())
+        logging.warning(f"Database setup failed: {e}")
+        logging.info("Continuing without database setup - database may already exist or connection will be established later.")
         return False
