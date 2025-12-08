@@ -1,16 +1,23 @@
 service: launchpad-backend
 runtime: python310
+env: standard
+instance_class: F1
 entrypoint: gunicorn -b :8080 main:app
 
 handlers:
-  - url: /api/.*
-    redirect_http_response_code: 301
+  - url: /.*
+    script: auto
+  - url: .*
     script: auto
 
 automatic_scaling:
-  min_instances: 1
-  max_instances: 10
-  target_cpu_utilization: 0.7
+  min_idle_instances: automatic
+  max_idle_instances: automatic
+  min_pending_latency: automatic
+  max_pending_latency: automatic
+  max_instances: 20
+
+service_account: smartq-backend-784299@appspot.gserviceaccount.com
 
 vpc_access_connector:
   name: projects/smartq-backend-784299/locations/europe-west1/connectors/launchpad-vpc-connector
