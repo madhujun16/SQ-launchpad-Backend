@@ -6,6 +6,7 @@ from launchpad_api.utils.cookie_manager import encrypt_token
 from launchpad_api.config import Config
 from flask_mail import Mail, Message
 from launchpad_api.db_models.user import User
+from launchpad_api.utils.common_functions import get_user_details
 import random, time
 
 
@@ -98,7 +99,30 @@ def verify_otp_post(body):  # noqa: E501
             return jsonify({"error":"Email and OTP required"}),400
 
         if email in dummy_emails or verify_otp(email,otp):
-            resp = make_response(jsonify({"message": "Login successful"}))
+            # Get user details to return in response
+            user_details = get_user_details(email)
+            user = User.get_by_email(email)
+            
+            response_data = {"message": "Login successful"}
+            if user_details and user:
+                response_data["user"] = {
+                    "id": user_details.get("id"),
+                    "email": user_details.get("email"),
+                    "name": user_details.get("name"),
+                    "role": user_details.get("role"),
+                    "role_id": user.role
+                }
+            elif user:
+                # Fallback if get_user_details fails but user exists
+                response_data["user"] = {
+                    "id": user.id,
+                    "email": user.email,
+                    "name": user.name,
+                    "role": None,
+                    "role_id": user.role
+                }
+            
+            resp = make_response(jsonify(response_data))
             token = encrypt_token(email)
             resp.set_cookie("session_id", token, httponly=True, secure=False,samesite="Lax",max_age=3600)
             return resp

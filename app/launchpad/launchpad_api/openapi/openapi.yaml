@@ -529,6 +529,110 @@ paths:
       tags:
       - user
       x-openapi-router-controller: launchpad_api.controllers.user_controller
+  /user/me:
+    get:
+      operationId: user_me_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Current user info fetched successfully
+      summary: Get current logged-in user info
+      tags:
+      - user
+      x-openapi-router-controller: launchpad_api.controllers.user_controller
+  /user/{user_id}:
+    get:
+      operationId: user_by_id_get
+      parameters:
+      - explode: false
+        in: path
+        name: user_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: User fetched successfully
+      summary: Get user by ID
+      tags:
+      - user
+      x-openapi-router-controller: launchpad_api.controllers.user_controller
+    put:
+      operationId: user_by_id_put
+      parameters:
+      - explode: false
+        in: path
+        name: user_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: User updated successfully
+      summary: Update user by ID
+      tags:
+      - user
+      x-openapi-router-controller: launchpad_api.controllers.user_controller
+    delete:
+      operationId: user_by_id_delete
+      parameters:
+      - explode: false
+        in: path
+        name: user_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: User deleted successfully
+      summary: Delete user by ID
+      tags:
+      - user
+      x-openapi-router-controller: launchpad_api.controllers.user_controller
+  /logout:
+    post:
+      operationId: logout_post
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Logout successful
+          headers:
+            Set-Cookie:
+              explode: false
+              schema:
+                type: string
+              style: simple
+      summary: Logout user
+      tags:
+      - login
+      x-openapi-router-controller: launchpad_api.controllers.login_controller
   /verify/otp:
     post:
       operationId: verify_otp_post
