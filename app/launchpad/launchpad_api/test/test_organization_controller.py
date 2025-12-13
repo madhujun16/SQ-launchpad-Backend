@@ -2,8 +2,8 @@ import unittest
 
 from flask import json
 
-from launchpad_api.models.organization_request import OrganizationRequest  # noqa: E501
-from launchpad_api.test import BaseTestCase
+from models.organization_request import OrganizationRequest  # noqa: E501
+from . import BaseTestCase
 
 
 class TestOrganizationController(BaseTestCase):

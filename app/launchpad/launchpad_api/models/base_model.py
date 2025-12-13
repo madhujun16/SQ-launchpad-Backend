@@ -2,7 +2,9 @@ import pprint
 
 import typing
 
-from launchpad_api import util
+from ..util import (
+    deserialize_model
+)
 
 T = typing.TypeVar('T')
 
@@ -19,7 +21,7 @@ class Model:
     @classmethod
     def from_dict(cls: typing.Type[T], dikt) -> T:
         """Returns the dict as a model"""
-        return util.deserialize_model(dikt, cls)
+        return deserialize_model(dikt, cls)
 
     def to_dict(self):
         """Returns the model properties as a dict

@@ -3,9 +3,9 @@ from typing import Dict
 from typing import Tuple
 from typing import Union
 from flask import jsonify
-from launchpad_api.models.organization_request import OrganizationRequest  # noqa: E501
-from launchpad_api.db_models.organization import Organization
-from launchpad_api.utils import messages,transform_data
+from ..models.organization_request import OrganizationRequest  # noqa: E501
+from ..db_models.organization import Organization
+from ..utils import messages,transform_data
 
 
 

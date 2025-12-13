@@ -1,8 +1,8 @@
 import json
 import os
 import logging
-from launchpad_api.db_models.user import User
-from launchpad_api.db_models.role_permission import RolePermissionMap
+from ..db_models.user import User
+from ..db_models.role_permission import RolePermissionMap
 import traceback
 
 def get_pii_encryption_key_from_secrets(secret_version_path):

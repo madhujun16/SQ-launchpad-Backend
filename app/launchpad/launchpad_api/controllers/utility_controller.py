@@ -1,9 +1,9 @@
 import connexion
 import logging
 from google.cloud import storage
-from launchpad_api.models.generate_upload_url_post_request import GenerateUploadUrlPostRequest  # noqa: E501
-from launchpad_api import util
-from launchpad_api.utils import messages
+from ..models.generate_upload_url_post_request import GenerateUploadUrlPostRequest  # noqa: E501
+from .. import util
+from ..utils import messages
 from flask import jsonify
 import datetime
 

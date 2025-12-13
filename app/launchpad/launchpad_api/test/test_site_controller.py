@@ -2,8 +2,8 @@ import unittest
 
 from flask import json
 
-from launchpad_api.models.site_request import SiteRequest  # noqa: E501
-from launchpad_api.test import BaseTestCase
+from models.site_request import SiteRequest  # noqa: E501
+from . import BaseTestCase
 
 
 class TestSiteController(BaseTestCase):

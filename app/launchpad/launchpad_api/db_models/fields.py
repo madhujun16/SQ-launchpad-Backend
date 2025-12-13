@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.exc import IntegrityError
-from launchpad_api.db import db
+from ..db import db
 import traceback
 
 class Field(db.Model):

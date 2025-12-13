@@ -2,8 +2,8 @@ import unittest
 
 from flask import json
 
-from launchpad_api.models.otp_request import OtpRequest  # noqa: E501
-from launchpad_api.test import BaseTestCase
+from models.otp_request import OtpRequest  # noqa: E501
+from . import BaseTestCase
 
 
 class TestOtpController(BaseTestCase):

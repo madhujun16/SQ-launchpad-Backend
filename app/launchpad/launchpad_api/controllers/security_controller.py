@@ -1,8 +1,8 @@
 from flask import request
 from connexion.exceptions import OAuthProblem
 from jwt import ExpiredSignatureError, InvalidTokenError
-from launchpad_api.utils.cookie_manager import decrypt_token
-from launchpad_api.utils.common_functions import get_user_details
+from ..utils.cookie_manager import decrypt_token
+from ..utils.common_functions import get_user_details
 
 
 def info_from_cookieAuth(api_key, required_scopes):

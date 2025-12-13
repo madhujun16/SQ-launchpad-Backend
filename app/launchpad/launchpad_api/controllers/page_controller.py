@@ -2,15 +2,15 @@ import connexion
 import json
 import traceback
 from flask import jsonify
-from launchpad_api.models.page_request import PageRequest  # noqa: E501
-from launchpad_api.utils import messages ,transform_data
+from ..models.page_request import PageRequest  # noqa: E501
+from ..utils import messages ,transform_data
 from datetime import datetime
 
-from launchpad_api.db_models.site import Site
-from launchpad_api.db_models.page import Page
-from launchpad_api.db_models.section import Section
-from launchpad_api.db import db
-from launchpad_api.db_models.fields import Field
+from ..db_models.site import Site
+from ..db_models.page import Page
+from ..db_models.section import Section
+from ..db import db
+from ..db_models.fields import Field
 
 
 def page_delete(page_id):  # noqa: E501

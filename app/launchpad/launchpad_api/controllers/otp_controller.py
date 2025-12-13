@@ -1,12 +1,12 @@
 import connexion
 from flask import jsonify, current_app ,make_response
-from launchpad_api.models.otp_request import OtpRequest  # noqa: E501
-from launchpad_api.models.login_request import LoginRequest  # noqa: E501
-from launchpad_api.utils.cookie_manager import encrypt_token
-from launchpad_api.config import Config
+from ..models.otp_request import OtpRequest  # noqa: E501
+from ..models.login_request import LoginRequest  # noqa: E501
+from ..utils.cookie_manager import encrypt_token
+from ..config import Config
 from flask_mail import Mail, Message
-from launchpad_api.db_models.user import User
-from launchpad_api.utils.common_functions import get_user_details
+from ..db_models.user import User
+from ..utils.common_functions import get_user_details
 import random, time
 
 

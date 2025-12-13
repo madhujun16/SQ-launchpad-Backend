@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import mysql.connector
-from launchpad_api.utils.common_functions import get_pii_encryption_key_from_secrets
+from .utils.common_functions import get_pii_encryption_key_from_secrets
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)

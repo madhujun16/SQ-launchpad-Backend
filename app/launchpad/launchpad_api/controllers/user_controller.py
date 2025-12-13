@@ -1,13 +1,13 @@
 import connexion
 
 from flask import jsonify, request
-from launchpad_api.models.user_request import UserRequest  # noqa: E501
-from launchpad_api import util
-from launchpad_api.db_models.user import User
-from launchpad_api.utils.messages import generic_message
-from launchpad_api.utils import transform_data
-from launchpad_api.utils.cookie_manager import decrypt_token
-from launchpad_api.utils.common_functions import get_user_details
+from ..models.user_request import UserRequest  # noqa: E501
+from .. import util
+from ..db_models.user import User
+from ..utils.messages import generic_message
+from ..utils import transform_data
+from ..utils.cookie_manager import decrypt_token
+from ..utils.common_functions import get_user_details
 
 
 def user_delete(user_id):  # noqa: E501

@@ -4,9 +4,9 @@ from typing import Tuple
 from typing import Union
 from flask import jsonify, make_response
 
-from launchpad_api.models.login_request import LoginRequest  # noqa: E501
-from launchpad_api import util
-from launchpad_api.utils.messages import generic_message
+from ..models.login_request import LoginRequest  # noqa: E501
+from .. import util
+from ..utils.messages import generic_message
 
 
 def login_post(body):  # noqa: E501

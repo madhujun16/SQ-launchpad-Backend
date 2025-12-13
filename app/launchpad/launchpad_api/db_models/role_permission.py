@@ -1,4 +1,4 @@
-from launchpad_api.db import db
+from ..db import db
 from datetime import datetime
 import traceback
 from sqlalchemy.dialects.postgresql import JSON

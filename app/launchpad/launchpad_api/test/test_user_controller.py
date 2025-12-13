@@ -2,8 +2,8 @@ import unittest
 
 from flask import json
 
-from launchpad_api.models.user_request import UserRequest  # noqa: E501
-from launchpad_api.test import BaseTestCase
+from models.user_request import UserRequest  # noqa: E501
+from test import BaseTestCase
 
 
 class TestUserController(BaseTestCase):

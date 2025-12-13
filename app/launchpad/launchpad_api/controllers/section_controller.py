@@ -3,10 +3,10 @@ from typing import Dict
 from typing import Tuple
 from typing import Union
 
-from launchpad_api.models.section_request import SectionRequest  # noqa: E501
-from launchpad_api import util
-from launchpad_api.db_models.section import Section
-from launchpad_api.utils.messages import generic_message
+from ..models.section_request import SectionRequest  # noqa: E501
+from .. import util
+from ..db_models.section import Section
+from ..utils.messages import generic_message
 
 def section_delete(section_id):  # noqa: E501
     """Delete a section

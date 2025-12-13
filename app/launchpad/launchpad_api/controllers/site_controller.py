@@ -1,11 +1,11 @@
 import connexion
 from flask import jsonify
 import logging
-from launchpad_api.models.site_request import SiteRequest  # noqa: E501
-from launchpad_api.utils.messages import generic_message
-from launchpad_api.db_models.site import Site
-from launchpad_api.utils import transform_data
-from launchpad_api.utils.queries import get_all_site_details
+from ..models.site_request import SiteRequest  # noqa: E501
+from ..utils.messages import generic_message
+from ..db_models.site import Site
+from ..utils import transform_data
+from ..utils.queries import get_all_site_details
 from collections import defaultdict
 import json
 

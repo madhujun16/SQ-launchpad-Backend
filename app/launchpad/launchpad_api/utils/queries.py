@@ -1,9 +1,9 @@
-from launchpad_api.db import db
+from ..db import db
 from sqlalchemy.orm import aliased
-from launchpad_api.db_models.site import Site
-from launchpad_api.db_models.page import Page
-from launchpad_api.db_models.section import Section
-from launchpad_api.db_models.fields import Field
+from ..db_models.site import Site
+from ..db_models.page import Page
+from ..db_models.section import Section
+from ..db_models.fields import Field
 import traceback
 import logging
 

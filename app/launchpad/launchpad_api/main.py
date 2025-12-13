@@ -1,16 +1,16 @@
 import connexion
-from launchpad_api import encoder
+from . import encoder
 import logging
 import json
 import traceback
 from connexion.exceptions import BadRequestProblem, Unauthorized
-from launchpad_api.db import db
+from .db import db
 from flask import Response
 from flask_cors import CORS
 from flask_session import Session
 from sqlalchemy import text
-from launchpad_api.utils import messages, common_functions
-from launchpad_api.config import db_secrets
+from .utils import messages, common_functions
+from .config import db_secrets
 
 logging.basicConfig(level=logging.INFO)
 
@@ -125,7 +125,7 @@ def get_main_app():
 
 
 def configure_app(app):
-    app.config.from_object("launchpad_api.config.Config")
+    app.config.from_object("app.launchpad.launchpad_api.config.Config")
 
 
 def register_extensions(app):

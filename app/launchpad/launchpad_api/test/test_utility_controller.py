@@ -2,8 +2,8 @@ import unittest
 
 from flask import json
 
-from launchpad_api.models.generate_upload_url_post_request import GenerateUploadUrlPostRequest  # noqa: E501
-from launchpad_api.test import BaseTestCase
+from models.generate_upload_url_post_request import GenerateUploadUrlPostRequest  # noqa: E501
+from . import BaseTestCase
 
 
 class TestUtilityController(BaseTestCase):
@@ -14,7 +14,7 @@ class TestUtilityController(BaseTestCase):
 
         generate a signed url to upload logo
         """
-        generate_upload_url_post_request = launchpad_api.GenerateUploadUrlPostRequest()
+        generate_upload_url_post_request = GenerateUploadUrlPostRequest()
         headers = { 
             'Accept': 'application/json',
             'Content-Type': 'application/json',

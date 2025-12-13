@@ -2,8 +2,8 @@ import unittest
 
 from flask import json
 
-from launchpad_api.models.section_request import SectionRequest  # noqa: E501
-from launchpad_api.test import BaseTestCase
+from models.section_request import SectionRequest  # noqa: E501
+from . import BaseTestCase
 
 
 class TestSectionController(BaseTestCase):

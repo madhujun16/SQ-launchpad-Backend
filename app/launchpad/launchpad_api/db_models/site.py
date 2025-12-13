@@ -1,5 +1,5 @@
 from datetime import datetime
-from launchpad_api.db import db
+from ..db import db
 import traceback
 
 class Site(db.Model):

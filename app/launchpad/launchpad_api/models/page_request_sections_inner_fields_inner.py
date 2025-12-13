@@ -2,8 +2,8 @@ from datetime import date, datetime  # noqa: F401
 
 from typing import List, Dict  # noqa: F401
 
-from launchpad_api.models.base_model import Model
-from launchpad_api import util
+from .base_model import Model
+from .. import util
 
 
 class PageRequestSectionsInnerFieldsInner(Model):

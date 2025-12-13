@@ -2,8 +2,8 @@ from datetime import date, datetime  # noqa: F401
 
 from typing import List, Dict  # noqa: F401
 
-from launchpad_api.models.base_model import Model
-from launchpad_api import util
+from .base_model import Model
+from ..util import deserialize_model
 
 
 class GenerateUploadUrlPostRequest(Model):
@@ -37,7 +37,7 @@ class GenerateUploadUrlPostRequest(Model):
         :return: The _generate_upload_url_post_request of this GenerateUploadUrlPostRequest.  # noqa: E501
         :rtype: GenerateUploadUrlPostRequest
         """
-        return util.deserialize_model(dikt, cls)
+        return deserialize_model(dikt, cls)
 
     @property
     def data_identifier(self) -> str:
