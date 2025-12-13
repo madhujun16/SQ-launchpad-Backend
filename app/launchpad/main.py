@@ -1,4 +1,4 @@
-from launchpad_api.main import get_main_app
+from .launchpad_api.main import get_main_app
 
 # Get Connexion app
 connexion_app = get_main_app()
