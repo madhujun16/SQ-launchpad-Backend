@@ -79,8 +79,8 @@ class Config:
 
     username = db_credentials.get("username") if db_credentials else os.getenv("DB_USERNAME", "root")
     password = db_credentials.get("password") if db_credentials else os.getenv("DB_PASSWORD", "")
-    server_ip = db_credentials.get("server_ip") if db_credentials else os.getenv("DB_HOST", "localhost")
-    database = db_credentials.get("database", "launchpad_db") if db_credentials else os.getenv("DB_NAME", "launchpad_db")
+    server_ip = db_credentials.get("server_ip") if db_credentials else os.getenv("DB_HOST", "localhosr")
+    database = db_credentials.get("database", "launchpad_db") if db_credentials else os.getenv("DB_NAME", "")
 
     # === Handle SSL credentials (optional for local dev) ===
     use_ssl = os.getenv("DB_USE_SSL", "false").lower() == "true"
@@ -95,7 +95,7 @@ class Config:
         ca_file_path = create_temp_file(ca_file_content)
     else:
         logging.info("SSL disabled or SSL certificates not available. Using non-SSL connection for local development.")
-
+    print("username",username,"password",password,"host",server_ip)
     # === Ensure database exists ===
     try:
         if use_ssl and cert_file_path and key_file_path and ca_file_path:
