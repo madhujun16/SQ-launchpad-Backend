@@ -5,7 +5,7 @@ from typing import Union
 from flask import jsonify
 from ..models.organization_request import OrganizationRequest  # noqa: E501
 from ..db_models.organization import Organization
-from ..utils import messages,transform_data
+from ..utils import messages, transform_data
 
 
 
@@ -32,30 +32,34 @@ def organization_get(organization_id=None):  # noqa: E501
 
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """
-    payload = {'message':messages.generic_message}
+    payload = {'message': messages.generic_message}
     result = 400
 
     try:
-        if not organization_id:
-            orgs = Organization.get_all_orgs()
+        # When no organization_id is provided OR it is "all", return all organizations
+        if organization_id is None or str(organization_id).lower() == "all":
+            orgs = Organization.get_all_orgs() or []
             all_orgs = transform_data.transform_orgs(orgs)
-
-            payload = {"message":"details fetched succesfully","data":all_orgs}
+            payload = {"message": "details fetched succesfully", "data": all_orgs}
             result = 200
-            
         else:
-            org = Organization.get_by_id(organization_id)
+            # For specific organization, ensure we have a valid integer ID
+            try:
+                org_id = int(organization_id)
+            except (TypeError, ValueError):
+                payload = {"message": "Invalid organization_id"}
+                return jsonify(payload), result
+
+            org = Organization.get_by_id(org_id)
             _org = transform_data.transform_org(org)
 
-            payload = {"message":"details fetched succesfully","data":_org}
+            payload = {"message": "details fetched succesfully", "data": _org}
             result = 200
-
-            
 
     except Exception as error:
         print(error)
 
-    return jsonify(payload),result
+    return jsonify(payload), result
 
 
 def organization_post(body):  # noqa: E501
