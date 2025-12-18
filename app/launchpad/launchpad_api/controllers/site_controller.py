@@ -1,10 +1,8 @@
 import connexion
 from flask import jsonify
 import logging
-from ..models.site_request import SiteRequest  # noqa: E501
 from ..utils.messages import generic_message
 from ..db_models.site import Site
-from ..utils import transform_data
 from ..utils.queries import get_all_site_details
 from collections import defaultdict
 import json
@@ -66,31 +64,40 @@ def site_post(body):  # noqa: E501
 
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """
-    site_request = body
-    if connexion.request.is_json:
-        site_request = SiteRequest.from_dict(connexion.request.get_json())  # noqa: E501
-
     result = 400
-    payload = {"message":generic_message}
+    payload = {"message": generic_message}
 
     try:
-        name = site_request.name
-        status = site_request.status
-        site = Site(name,status)
-        
-        response = site.create_row()
+        # Be flexible with the payload and ignore extra fields like `name`
+        request_json = connexion.request.get_json() if connexion.request.is_json else (body or {})
 
-        if response:
-            payload = {"message":"Site Created Succesfully"}
+        status = request_json.get("status")
+
+        if not status:
+            payload = {"message": "status is required"}
+            return jsonify(payload), result
+
+        # We currently only persist site status; name and other details live in the page/field structure.
+        site = Site(status=status)
+        site_id = site.create_row()
+
+        if site_id:
+            payload = {
+                "message": "Site Created Succesfully",
+                "data": {
+                    "site_id": site_id,
+                    "status": status,
+                },
+            }
             result = 200
         else:
-            payload = {"message":"Site creation failed"}
+            payload = {"message": "Site creation failed"}
             result = 400
 
     except Exception as error:
         print(error)
         result = 400
-        payload = {"message":generic_message}
+        payload = {"message": generic_message}
 
 
     return jsonify(payload),result
@@ -106,38 +113,36 @@ def site_put(body):  # noqa: E501
 
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """
-    site_request = body
-    if connexion.request.is_json:
-        site_request = SiteRequest.from_dict(connexion.request.get_json())  # noqa: E501
-    
     result = 400
-    payload = {"message":generic_message}
+    payload = {"message": generic_message}
 
     try:
-        name = site_request.name
-        id = site_request.id
-        status = site_request.status
+        request_json = connexion.request.get_json() if connexion.request.is_json else (body or {})
 
-        if not id:
-            payload = {"message":"Invalid Site ID"}
+        site_id = request_json.get("id")
+        status = request_json.get("status")
+
+        if not site_id:
+            payload = {"message": "Invalid Site ID"}
             result = 400
-            return jsonify(payload),result
+            return jsonify(payload), result
         
-        site = Site.get_by_id(id)
+        site = Site.get_by_id(site_id)
 
         if site:
-            site.name = name
             site.status = status
-            Site.update_row(site)
+            site.update_row()
+            payload = {"message": "Site updated successfully"}
+            result = 200
 
         else:
-            payload = {"message":"Invalid Site ID"}
+            payload = {"message": "Invalid Site ID"}
             result = 400
         
     except Exception as error:
         print(error)
         result = 400
-        payload = {"message":generic_message}
+        payload = {"message": generic_message}
 
     return jsonify(payload),result
 
