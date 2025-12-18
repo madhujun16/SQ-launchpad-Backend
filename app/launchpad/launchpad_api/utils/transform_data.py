@@ -72,6 +72,9 @@ def transform_user(user):
     _user['user_id'] = getattr(user, 'id', None)
     _user['name'] = getattr(user, 'name', None)
     _user['email'] = getattr(user, 'email', None)
+    # Include role information so frontend user management can display it
+    _user['role'] = getattr(user, 'role', None)
+    _user['role_id'] = getattr(user, 'role', None)
     _user['last_logged_in'] = getattr(user, 'last_logged_in', None)
     _user['created_at'] = getattr(user, 'created_at', None)
     _user['updated_at'] = getattr(user, 'updated_at', None)
