@@ -4,8 +4,8 @@ info:
   version: 1.0.0
 servers:
 - url: http://localhost:8080/api
-security:
-- cookieAuth: []
+# security:
+# - cookieAuth: []
 paths:
   /generate-upload-url:
     post:
