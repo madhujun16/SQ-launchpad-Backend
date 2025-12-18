@@ -155,34 +155,113 @@ def site_all_get():  # noqa: E501
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """
     result = 400
-    payload = {"message":generic_message}
+    payload = {"message": generic_message}
+
+    def _extract_display_value(value):
+        """
+        Helper to normalize field values that might be stored as simple
+        strings or small JSON objects (e.g. {\"value\": \"asda\"}).
+        """
+        try:
+            if isinstance(value, dict):
+                # Common patterns used for field_value payloads
+                for key in ("value", "text", "label"):
+                    if key in value:
+                        return value[key]
+            return value
+        except Exception:
+            return value
+
+    def _normalize_status(status):
+        """Map internal statuses to the canonical values used by the frontend."""
+        if not status:
+            return status
+
+        s = str(status).strip().lower()
+        mapping = {
+            "site-created": "Created",
+            "created": "Created",
+            "site_study_done": "site_study_done",
+            "site-study-done": "site_study_done",
+            "scoping_done": "scoping_done",
+            "scoping-done": "scoping_done",
+            "approved": "approved",
+            "procurement_done": "procurement_done",
+            "procurement-done": "procurement_done",
+            "deployed": "deployed",
+            "live": "live",
+        }
+        return mapping.get(s, status)
 
     try:
         all_sites = get_all_site_details()
         sites = defaultdict(dict)
 
         if all_sites is None:
-            payload = {"message":"Unable to fetch sites"}
+            payload = {"message": "Unable to fetch sites"}
             result = 400
-            return jsonify(payload),result
-        
+            return jsonify(payload), result
+
+        # Aggregate raw data by site_id
         for site in all_sites:
             site_id = site.id
             _site = sites.get(site_id, {})
-            _site['site_id'] = site_id
-            _site['status'] = site.status
-            if site.field_name:
-                _site[site.field_name] = json.loads(site.field_value)
+            _site["site_id"] = site_id
+            _site["status"] = _normalize_status(site.status)
+
+            if getattr(site, "field_name", None):
+                raw_value = site.field_value
+                try:
+                    if isinstance(raw_value, str):
+                        value = json.loads(raw_value)
+                    else:
+                        value = raw_value
+                except Exception:
+                    value = raw_value
+
+                _site[site.field_name] = value
 
             sites[site_id] = _site
-        
-        payload = {"data":list(sites.values()),"message":"Succesfully fetched sites"}
+
+        # Normalize field names and shapes to what the frontend expects
+        normalized_sites = []
+        for _site in sites.values():
+            # Derive primary name from site_name if present
+            if "site_name" in _site and _site.get("site_name") is not None:
+                _site["name"] = _extract_display_value(_site["site_name"])
+
+            # Organization name: org_name -> organization_name
+            org_name = _site.get("organization_name") or _site.get("org_name")
+            if org_name is not None:
+                _site["organization_name"] = _extract_display_value(org_name)
+
+            # Unit code: prefer unit_code field, fall back to unit_id
+            unit = _site.get("unit_code") or _site.get("unit_id")
+            if unit is not None:
+                _site["unit_code"] = _extract_display_value(unit)
+
+            # Normalize commonly used fields (if present)
+            for key in [
+                "target_live_date",
+                "suggested_go_live",
+                "assigned_ops_manager",
+                "assigned_deployment_engineer",
+                "sector",
+                "organization_logo",
+                "organization_id",
+            ]:
+                if key in _site and _site[key] is not None:
+                    _site[key] = _extract_display_value(_site[key])
+
+            normalized_sites.append(_site)
+
+        payload = {"data": normalized_sites, "message": "Succesfully fetched sites"}
         result = 200
-            
 
     except Exception as error:
         logging.info(error)
         print(error)
         result = 400
-        payload = {"message":generic_message}
-    return jsonify(payload),result
+        payload = {"message": generic_message}
+
+    return jsonify(payload), result
