@@ -36,7 +36,7 @@ def organization_get(organization_id=None):  # noqa: E501
     result = 400
 
     try:
-        if organization_id == "all":
+        if not organization_id:
             orgs = Organization.get_all_orgs()
             all_orgs = transform_data.transform_orgs(orgs)
 
