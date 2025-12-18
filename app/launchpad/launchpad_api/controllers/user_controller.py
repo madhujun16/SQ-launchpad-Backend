@@ -75,34 +75,53 @@ def user_post(body):  # noqa: E501
 
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """
-    user_request = body
-    
-    if connexion.request.is_json:
-        user_request = UserRequest.from_dict(connexion.request.get_json())  # noqa: E501
-    
     result = 400
-    payload = {"message":generic_message}
+    payload = {"message": generic_message}
 
     try:
-        name = user_request.name
-        email = user_request.emailid
-        role = user_request.role
+        # Prefer raw JSON so we can be flexible with field names (e.g., `Role` vs `role`)
+        request_json = connexion.request.get_json() if connexion.request.is_json else (body or {})
 
-        user = User(name,email,role)
+        name = request_json.get("name")
+        email = request_json.get("emailid") or request_json.get("email")
+        role = request_json.get("role")
 
+        # Support clients that send `Role` (capital R)
+        if role is None and "Role" in request_json:
+            role = request_json.get("Role")
+
+        # Basic validation
+        if not name or not email or role is None:
+            payload = {"message": "name, emailid and role are required"}
+            return jsonify(payload), result
+
+        try:
+            role = int(role)
+        except (TypeError, ValueError):
+            payload = {"message": "role must be an integer"}
+            return jsonify(payload), result
+
+        # Enforce unique email before hitting DB constraint
+        existing_user = User.get_by_email(email)
+        if existing_user:
+            payload = {"message": "User with this email already exists"}
+            return jsonify(payload), result
+
+        user = User(name, email, role)
         response = user.create_row()
-        
+
         if response:
             data = transform_data.transform_user(user)
-            payload = {"message":"User Created Succesfully","data":data}
+            payload = {"message": "User Created Succesfully", "data": data}
             result = 200
         else:
-            payload = {"message":"User creation failed"}
+            payload = {"message": "User creation failed"}
             result = 400
 
     except Exception as error:
         print(error)
-    return jsonify(payload),result
+
+    return jsonify(payload), result
 
 
 def user_put(body):  # noqa: E501
