@@ -83,7 +83,7 @@ paths:
         name: organization_id
         required: false
         schema:
-          type: integer
+          type: string
         style: form
       responses:
         "200":
