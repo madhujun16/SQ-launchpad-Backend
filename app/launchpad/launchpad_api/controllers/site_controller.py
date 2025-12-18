@@ -18,17 +18,41 @@ def site_delete(site_id):  # noqa: E501
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """
     result = 400
-    payload = {"message":generic_message}
+    payload = {"message": generic_message}
 
     try:
         if not site_id:
-            payload = {"message":"Site ID is missing"}
+            payload = {"message": "Site ID is missing"}
             result = 400
-            return jsonify(payload),result
-        
-        site = Site.delete_by_id(site_id)
+            return jsonify(payload), result
 
-        if site:
+        # Ensure we have an integer ID
+        try:
+            site_id_int = int(site_id)
+        except (TypeError, ValueError):
+            payload = {"message": "Invalid Site ID"}
+            return jsonify(payload), result
+
+        site = Site.get_by_id(site_id_int)
+
+        if not site:
+            payload = {"message": "Site not found"}
+            return jsonify(payload), 404
+
+        # Business rule: allow delete only for non-live deployments
+        normalized_status = str(site.status or "").strip().lower()
+        non_deletable_statuses = {"deployed", "live"}
+
+        if normalized_status in non_deletable_statuses:
+            payload = {
+                "message": "Cannot delete a site once it is deployed or live"
+            }
+            return jsonify(payload), result
+
+        # At this point, deleting the site will cascade to pages/sections/fields
+        deleted_id = site.delete_row()
+
+        if deleted_id:
             payload = {"message": "Site deleted successfully"}
             result = 200
         else:
@@ -38,9 +62,9 @@ def site_delete(site_id):  # noqa: E501
     except Exception as error:
         print(error)
         result = 400
-        payload = {"message":generic_message}
+        payload = {"message": generic_message}
 
-    return jsonify(payload),result
+    return jsonify(payload), result
 
 def site_get(id):  # noqa: E501
     """Get list of sites
