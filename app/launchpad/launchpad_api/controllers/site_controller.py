@@ -1,9 +1,10 @@
 import connexion
 from flask import jsonify
 import logging
-from launchpad_api.utils.messages import generic_message
-from launchpad_api.db_models.site import Site
-from launchpad_api.utils.queries import get_all_site_details
+import traceback
+from ..utils.messages import generic_message
+from ..db_models.site import Site
+from ..utils.queries import get_all_site_details
 from collections import defaultdict
 import json
 
@@ -21,6 +22,8 @@ def site_delete(site_id):  # noqa: E501
     payload = {"message": generic_message}
 
     try:
+        logging.info(f"[site_delete] Incoming request to delete site_id={site_id}")
+
         if not site_id:
             payload = {"message": "Site ID is missing"}
             result = 400
@@ -36,8 +39,13 @@ def site_delete(site_id):  # noqa: E501
         site = Site.get_by_id(site_id_int)
 
         if not site:
+            logging.info(f"[site_delete] Site not found for id={site_id_int}")
             payload = {"message": "Site not found"}
             return jsonify(payload), 404
+
+        logging.info(
+            f"[site_delete] Found site id={site.id}, status={site.status}"
+        )
 
         # Business rule: allow delete only for non-live deployments
         normalized_status = str(site.status or "").strip().lower()
@@ -47,21 +55,35 @@ def site_delete(site_id):  # noqa: E501
             payload = {
                 "message": "Cannot delete a site once it is deployed or live"
             }
+            logging.info(
+                f"[site_delete] Rejecting delete for id={site.id} with status={site.status}"
+            )
             return jsonify(payload), result
 
         # At this point, deleting the site will cascade to pages/sections/fields
         deleted_id = site.delete_row()
 
         if deleted_id:
+            logging.info(f"[site_delete] Successfully deleted site id={deleted_id}")
             payload = {"message": "Site deleted successfully"}
             result = 200
         else:
-            payload = {"message": "Unable to delete the site"}
-            result = 400
+            # delete_row returned falsy without raising – log and surface as server error
+            logging.error(
+                f"[site_delete] delete_row() returned falsy for site id={site.id}, "
+                f"status={site.status}"
+            )
+            payload = {
+                "message": "Unable to delete the site due to an internal error"
+            }
+            result = 500
 
     except Exception as error:
-        print(error)
-        result = 400
+        logging.error(
+            f"[site_delete] Exception while deleting site_id={site_id}: {error}\n"
+            f"{traceback.format_exc()}"
+        )
+        result = 500
         payload = {"message": generic_message}
 
     return jsonify(payload), result
