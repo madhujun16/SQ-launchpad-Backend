@@ -1,6 +1,7 @@
 import connexion
 import json
 import traceback
+import logging
 from flask import jsonify
 from launchpad_api.models.page_request import PageRequest  # noqa: E501
 from launchpad_api.utils import messages ,transform_data
@@ -79,40 +80,62 @@ def page_get(page_name, site_id):  # noqa: E501
     payload = {"message":messages.generic_message}
 
     try:
+        logging.info(f"[page_get] Fetching page_name={page_name}, site_id={site_id}")
+        
         page = Page.get_by_siteid_and_pagename(site_id,page_name)
 
         if not page:
+            logging.warning(f"[page_get] Page not found: page_name={page_name}, site_id={site_id}")
             result = 400
             payload = {"message":"Invalid Page name or site"}
             return jsonify(payload),result
         
-        # transformed_page = transform_data.transform_page(page)
-
+        logging.info(f"[page_get] Found page id={page.id}, fetching sections...")
+        
         sections = Section.get_by_pageid(page.id)
-
-        if not sections:
-            result = 400
-            payload = {"message":"Unable to fetch details"}
+        
+        # Handle None (error) vs empty list (no sections yet - valid state)
+        if sections is None:
+            logging.error(f"[page_get] Error fetching sections for page_id={page.id}")
+            result = 500
+            payload = {"message":"Error fetching sections"}
             return jsonify(payload),result
         
+        logging.info(f"[page_get] Found {len(sections)} sections for page_id={page.id}")
+        
+        # If no sections, return page with empty sections array (valid state)
+        if not sections:
+            page_data = transform_data.transform_page(page)
+            page_data["sections"] = []
+            payload = {"message":"Succesfully fetched the data","data":page_data}
+            result = 200
+            return jsonify(payload),result
 
         section_ids = [section.id for section in sections]
+        logging.info(f"[page_get] Fetching fields for section_ids={section_ids}")
 
         fields = Field.get_by_section_ids(section_ids)
-
-        if not fields:
-            result = 400
-            payload = {"message":"Unable to fetch details"}
+        
+        # Handle None (error) vs empty list (no fields yet - valid state)
+        if fields is None:
+            logging.error(f"[page_get] Error fetching fields for section_ids={section_ids}")
+            result = 500
+            payload = {"message":"Error fetching fields"}
             return jsonify(payload),result
         
-        page_data = create_page_response(page,sections,fields)
+        logging.info(f"[page_get] Found {len(fields)} fields across {len(sections)} sections")
+        
+        # Even if no fields, return the page with sections (fields can be empty arrays)
+        page_data = create_page_response(page,sections,fields or [])
 
         payload = {"message":"Succesfully fetched the data","data":page_data}
         result = 200
 
         
     except Exception as error:
-        result = 400
+        logging.error(f"[page_get] Exception: {error}")
+        logging.error(traceback.format_exc())
+        result = 500
         payload = {"message":messages.generic_message}
         print(traceback.format_exc())
 
