@@ -82,13 +82,39 @@ def page_get(page_name, site_id):  # noqa: E501
     try:
         logging.info(f"[page_get] Fetching page_name={page_name}, site_id={site_id}")
         
-        page = Page.get_by_siteid_and_pagename(site_id,page_name)
+        # Validate site_id
+        if not site_id:
+            result = 400
+            payload = {"message": "Site ID is required"}
+            return jsonify(payload), result
+        
+        # Ensure site_id is an integer
+        try:
+            site_id_int = int(site_id)
+        except (TypeError, ValueError):
+            result = 400
+            payload = {"message": "Invalid Site ID"}
+            return jsonify(payload), result
+        
+        # First verify the site exists
+        site = Site.get_by_id(site_id_int)
+        if not site:
+            logging.warning(f"[page_get] Site not found: site_id={site_id_int}")
+            result = 404
+            payload = {"message": "Site not found"}
+            return jsonify(payload), result
+        
+        # Use the validated integer site_id for the page lookup
+        site_id = site_id_int
+        
+        # Then check if the page exists
+        page = Page.get_by_siteid_and_pagename(site_id, page_name)
 
         if not page:
             logging.warning(f"[page_get] Page not found: page_name={page_name}, site_id={site_id}")
-            result = 400
-            payload = {"message":"Invalid Page name or site"}
-            return jsonify(payload),result
+            result = 404
+            payload = {"message": f"Page '{page_name}' not found for site {site_id}"}
+            return jsonify(payload), result
         
         logging.info(f"[page_get] Found page id={page.id}, fetching sections...")
         
