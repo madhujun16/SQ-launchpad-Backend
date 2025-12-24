@@ -485,6 +485,118 @@ paths:
       tags:
       - platform
       x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+    post:
+      operationId: platform_software_modules_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Software module created successfully
+      summary: Create a new software module
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/software-modules/{id}:
+    put:
+      operationId: platform_software_modules_id_put
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Software module updated successfully
+      summary: Update an existing software module
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+    delete:
+      operationId: platform_software_modules_id_delete
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Software module deleted successfully
+      summary: Delete a software module
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/software-modules/{id}/archive:
+    put:
+      operationId: platform_software_modules_id_archive_put
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Software module archived successfully
+      summary: Archive a software module
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/software-modules/{id}/unarchive:
+    put:
+      operationId: platform_software_modules_id_unarchive_put
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Software module unarchived successfully
+      summary: Unarchive a software module
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
   /platform/hardware-items:
     get:
       operationId: platform_hardware_items_get
@@ -511,6 +623,118 @@ paths:
                 type: object
           description: Successfully fetched hardware items
       summary: Get list of hardware items
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+    post:
+      operationId: platform_hardware_items_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Hardware item created successfully
+      summary: Create a new hardware item
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/hardware-items/{id}:
+    put:
+      operationId: platform_hardware_items_id_put
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Hardware item updated successfully
+      summary: Update an existing hardware item
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+    delete:
+      operationId: platform_hardware_items_id_delete
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Hardware item deleted successfully
+      summary: Delete a hardware item
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/hardware-items/{id}/archive:
+    put:
+      operationId: platform_hardware_items_id_archive_put
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Hardware item archived successfully
+      summary: Archive a hardware item
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/hardware-items/{id}/unarchive:
+    put:
+      operationId: platform_hardware_items_id_unarchive_put
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Hardware item unarchived successfully
+      summary: Unarchive a hardware item
       tags:
       - platform
       x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
