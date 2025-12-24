@@ -434,6 +434,108 @@ paths:
       tags:
       - site
       x-openapi-router-controller: app.launchpad.launchpad_api.controllers.site_controller
+  /platform/software-categories:
+    get:
+      operationId: platform_software_categories_get
+      parameters:
+      - explode: true
+        in: query
+        name: is_active
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Successfully fetched software categories
+      summary: Get list of software categories
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/software-modules:
+    get:
+      operationId: platform_software_modules_get
+      parameters:
+      - explode: true
+        in: query
+        name: category_ids
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: is_active
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Successfully fetched software modules
+      summary: Get list of software modules
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/hardware-items:
+    get:
+      operationId: platform_hardware_items_get
+      parameters:
+      - explode: true
+        in: query
+        name: category_ids
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: is_active
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Successfully fetched hardware items
+      summary: Get list of hardware items
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/recommendation-rules:
+    get:
+      operationId: platform_recommendation_rules_get
+      parameters:
+      - explode: true
+        in: query
+        name: category_ids
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Successfully fetched recommendation rules
+      summary: Get list of recommendation rules
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
   /user:
     delete:
       operationId: user_delete
