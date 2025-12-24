@@ -2,8 +2,13 @@ import connexion
 from flask import jsonify
 import logging
 import traceback
+from sqlalchemy.exc import IntegrityError, OperationalError
 from ..utils.messages import generic_message
 from ..db_models.site import Site
+from ..db_models.page import Page
+from ..db_models.section import Section
+from ..db_models.fields import Field
+from ..db import db
 from ..utils.queries import get_all_site_details
 from collections import defaultdict
 import json
@@ -60,21 +65,83 @@ def site_delete(site_id):  # noqa: E501
             )
             return jsonify(payload), result
 
-        # At this point, deleting the site will cascade to pages/sections/fields
-        deleted_id = site.delete_row()
-
-        if deleted_id:
-            logging.info(f"[site_delete] Successfully deleted site id={deleted_id}")
+        # Try to delete the site - CASCADE should handle related records
+        # If that fails, manually delete related records
+        try:
+            # First, try simple delete (relying on CASCADE if database has it)
+            db.session.delete(site)
+            db.session.commit()
+            
+            logging.info(f"[site_delete] Successfully deleted site id={site_id_int} (with CASCADE)")
             payload = {"message": "Site deleted successfully"}
             result = 200
-        else:
-            # delete_row returned falsy without raising – log and surface as server error
+            
+        except (IntegrityError, OperationalError) as db_error:
+            # CASCADE might not be working - manually delete related records
+            db.session.rollback()
+            logging.warning(
+                f"[site_delete] CASCADE delete failed for site {site_id_int}. "
+                f"Error: {str(db_error)}. Attempting manual cascade delete..."
+            )
+            
+            try:
+                # Re-fetch site to ensure we have a valid object after rollback
+                site = Site.get_by_id(site_id_int)
+                if not site:
+                    payload = {"message": "Site not found after rollback"}
+                    result = 404
+                    return jsonify(payload), result
+                
+                # Get all pages for this site
+                pages = Page.query.filter(Page.site_id == site_id_int).all()
+                page_ids = [page.id for page in pages] if pages else []
+                
+                if page_ids:
+                    # Get all sections for these pages
+                    sections = Section.query.filter(Section.page_id.in_(page_ids)).all()
+                    section_ids = [section.id for section in sections] if sections else []
+                    
+                    if section_ids:
+                        # Delete all fields for these sections
+                        fields_deleted = Field.query.filter(Field.section_id.in_(section_ids)).delete(synchronize_session=False)
+                        logging.info(f"[site_delete] Deleted {fields_deleted} fields for site {site_id_int}")
+                    
+                    # Delete all sections
+                    sections_deleted = Section.query.filter(Section.page_id.in_(page_ids)).delete(synchronize_session=False)
+                    logging.info(f"[site_delete] Deleted {sections_deleted} sections for site {site_id_int}")
+                
+                # Delete all pages
+                pages_deleted = Page.query.filter(Page.site_id == site_id_int).delete(synchronize_session=False)
+                logging.info(f"[site_delete] Deleted {pages_deleted} pages for site {site_id_int}")
+                
+                # Now delete the site
+                db.session.delete(site)
+                db.session.commit()
+                
+                logging.info(f"[site_delete] Successfully deleted site id={site_id_int} (manual cascade)")
+                payload = {"message": "Site deleted successfully"}
+                result = 200
+                
+            except Exception as manual_delete_error:
+                db.session.rollback()
+                logging.error(
+                    f"[site_delete] Manual cascade delete also failed for site {site_id_int}. "
+                    f"Error: {str(manual_delete_error)}\n"
+                    f"Traceback: {traceback.format_exc()}"
+                )
+                payload = {
+                    "message": f"Unable to delete the site due to an internal error: {str(manual_delete_error)}"
+                }
+                result = 500
+                
+        except Exception as error:
+            db.session.rollback()
             logging.error(
-                f"[site_delete] delete_row() returned falsy for site id={site.id}, "
-                f"status={site.status}"
+                f"[site_delete] Unexpected error deleting site {site_id_int}: {str(error)}\n"
+                f"Traceback: {traceback.format_exc()}"
             )
             payload = {
-                "message": "Unable to delete the site due to an internal error"
+                "message": f"Unable to delete the site due to an internal error: {str(error)}"
             }
             result = 500
 

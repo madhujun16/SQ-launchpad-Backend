@@ -10,7 +10,7 @@
         "env": {
           "FLASK_APP": "main:app",
           "FLASK_ENV": "development",
-          "GOOGLE_APPLICATION_CREDENTIALS":"/Users/sarthakgupta/Desktop/code/launchpad-all_access.json",
+          "GOOGLE_APPLICATION_CREDENTIALS":"/Users/Shivanshu.Singh/sqlaunchpad-backend.json",
           "GOOGLE_CLOUD_PROJECT":"smartq-backend-784299"
         },
         "args": ["run", "--no-debugger", "--no-reload"],

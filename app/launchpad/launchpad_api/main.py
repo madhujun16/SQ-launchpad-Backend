@@ -125,7 +125,12 @@ def get_main_app():
 
 
 def configure_app(app):
-    app.config.from_object("app.launchpad.launchpad_api.config.Config")
+    try:
+        app.config.from_object("app.launchpad.launchpad_api.config.Config")
+    except Exception:
+        # Fallback for running from app/launchpad directory
+        from . import config
+        app.config.from_object(config.Config)
 
 
 def register_extensions(app):
