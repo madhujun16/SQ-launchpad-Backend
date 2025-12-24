@@ -324,12 +324,23 @@ def site_all_get():  # noqa: E501
 
             if getattr(site, "field_name", None):
                 raw_value = site.field_value
+                # Handle field values that might be:
+                # 1. Plain strings: "Site Name"
+                # 2. JSON-encoded strings: "\"Site Name\"" or "{\"value\": \"Site Name\"}"
+                # 3. Already parsed objects/dicts: {"value": "Site Name"}
                 try:
                     if isinstance(raw_value, str):
-                        value = json.loads(raw_value)
+                        # Try to parse as JSON (handles JSON-encoded strings)
+                        try:
+                            value = json.loads(raw_value)
+                        except (json.JSONDecodeError, ValueError):
+                            # Not valid JSON, use as plain string
+                            value = raw_value
                     else:
+                        # Already an object/dict, use as-is
                         value = raw_value
                 except Exception:
+                    # Fallback: use raw value if anything goes wrong
                     value = raw_value
 
                 _site[site.field_name] = value

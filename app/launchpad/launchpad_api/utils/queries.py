@@ -51,7 +51,7 @@ def get_all_site_details(siteid=None):
             .outerjoin(
                 p,
                 (p.site_id == Site.id) &
-                (p.page_name == 'site_study')
+                (p.page_name == 'create_site')
             )
             .outerjoin(
                 sec,
