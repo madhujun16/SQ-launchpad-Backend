@@ -1,6 +1,7 @@
 import connexion
 from flask import jsonify, request
 import logging
+import traceback
 from sqlalchemy.exc import IntegrityError
 from ..utils.messages import generic_message
 from ..db import db
@@ -475,23 +476,44 @@ def platform_recommendation_rules_id_delete(id):  # noqa: E501
             return jsonify(payload), 404
 
         try:
-            if rule.delete_row():
+            deleted_id = rule.delete_row()
+            if deleted_id:
                 payload = {"message": "Recommendation rule deleted successfully"}
                 result = 200
             else:
                 payload = {"message": "Unable to delete recommendation rule"}
                 result = 400
+        except IntegrityError as e:
+            db.session.rollback()
+            error_details = str(e.orig) if hasattr(e, 'orig') else str(e)
+            logging.error(f"[platform_recommendation_rules_id_delete] IntegrityError: {error_details}")
+            logging.error(f"[platform_recommendation_rules_id_delete] Full error: {traceback.format_exc()}")
+            payload = {
+                "message": "Cannot delete recommendation rule: it is referenced by other records",
+                "code": "RULE_IN_USE"
+            }
+            result = 409
         except Exception as db_error:
             db.session.rollback()
-            logging.error(f"[platform_recommendation_rules_id_delete] Database error: {str(db_error)}")
-            payload = {"message": "Unable to delete recommendation rule due to database error"}
+            error_details = str(db_error)
+            logging.error(f"[platform_recommendation_rules_id_delete] Database error: {error_details}")
+            logging.error(f"[platform_recommendation_rules_id_delete] Full error: {traceback.format_exc()}")
+            payload = {
+                "message": f"Unable to delete recommendation rule: {error_details}",
+                "code": "DELETE_ERROR"
+            }
             result = 500
 
     except Exception as error:
-        logging.error(f"[platform_recommendation_rules_id_delete] Error: {error}")
-        print(error)
+        error_trace = traceback.format_exc()
+        logging.error(f"[platform_recommendation_rules_id_delete] Unexpected error: {str(error)}")
+        logging.error(f"[platform_recommendation_rules_id_delete] Full traceback: {error_trace}")
+        print(error_trace)
         result = 500
-        payload = {"message": "An unexpected error occurred while deleting the recommendation rule"}
+        payload = {
+            "message": f"An unexpected error occurred while deleting the recommendation rule: {str(error)}",
+            "code": "UNEXPECTED_ERROR"
+        }
 
     return jsonify(payload), result
 
@@ -673,7 +695,8 @@ def platform_software_modules_id_delete(id):  # noqa: E501
             return jsonify(payload), 404
 
         try:
-            if module.delete_row():
+            deleted_id = module.delete_row()
+            if deleted_id:
                 payload = {"message": "Software module deleted successfully"}
                 result = 200
             else:
@@ -681,7 +704,9 @@ def platform_software_modules_id_delete(id):  # noqa: E501
                 result = 400
         except IntegrityError as e:
             db.session.rollback()
-            logging.error(f"[platform_software_modules_id_delete] IntegrityError: {str(e)}")
+            error_details = str(e.orig) if hasattr(e, 'orig') else str(e)
+            logging.error(f"[platform_software_modules_id_delete] IntegrityError: {error_details}")
+            logging.error(f"[platform_software_modules_id_delete] Full error: {traceback.format_exc()}")
             payload = {
                 "message": "Cannot delete software module: it is referenced by other records",
                 "code": "MODULE_IN_USE"
@@ -689,15 +714,25 @@ def platform_software_modules_id_delete(id):  # noqa: E501
             result = 409
         except Exception as db_error:
             db.session.rollback()
-            logging.error(f"[platform_software_modules_id_delete] Database error: {str(db_error)}")
-            payload = {"message": "Unable to delete software module due to database error"}
+            error_details = str(db_error)
+            logging.error(f"[platform_software_modules_id_delete] Database error: {error_details}")
+            logging.error(f"[platform_software_modules_id_delete] Full error: {traceback.format_exc()}")
+            payload = {
+                "message": f"Unable to delete software module: {error_details}",
+                "code": "DELETE_ERROR"
+            }
             result = 500
 
     except Exception as error:
-        logging.error(f"[platform_software_modules_id_delete] Error: {error}")
-        print(error)
+        error_trace = traceback.format_exc()
+        logging.error(f"[platform_software_modules_id_delete] Unexpected error: {str(error)}")
+        logging.error(f"[platform_software_modules_id_delete] Full traceback: {error_trace}")
+        print(error_trace)
         result = 500
-        payload = {"message": "An unexpected error occurred while deleting the software module"}
+        payload = {
+            "message": f"An unexpected error occurred while deleting the software module: {str(error)}",
+            "code": "UNEXPECTED_ERROR"
+        }
 
     return jsonify(payload), result
 
@@ -1001,7 +1036,8 @@ def platform_hardware_items_id_delete(id):  # noqa: E501
             return jsonify(payload), 404
 
         try:
-            if item.delete_row():
+            deleted_id = item.delete_row()
+            if deleted_id:
                 payload = {"message": "Hardware item deleted successfully"}
                 result = 200
             else:
@@ -1009,7 +1045,9 @@ def platform_hardware_items_id_delete(id):  # noqa: E501
                 result = 400
         except IntegrityError as e:
             db.session.rollback()
-            logging.error(f"[platform_hardware_items_id_delete] IntegrityError: {str(e)}")
+            error_details = str(e.orig) if hasattr(e, 'orig') else str(e)
+            logging.error(f"[platform_hardware_items_id_delete] IntegrityError: {error_details}")
+            logging.error(f"[platform_hardware_items_id_delete] Full error: {traceback.format_exc()}")
             payload = {
                 "message": "Cannot delete hardware item: it is referenced by other records",
                 "code": "ITEM_IN_USE"
@@ -1017,15 +1055,25 @@ def platform_hardware_items_id_delete(id):  # noqa: E501
             result = 409
         except Exception as db_error:
             db.session.rollback()
-            logging.error(f"[platform_hardware_items_id_delete] Database error: {str(db_error)}")
-            payload = {"message": "Unable to delete hardware item due to database error"}
+            error_details = str(db_error)
+            logging.error(f"[platform_hardware_items_id_delete] Database error: {error_details}")
+            logging.error(f"[platform_hardware_items_id_delete] Full error: {traceback.format_exc()}")
+            payload = {
+                "message": f"Unable to delete hardware item: {error_details}",
+                "code": "DELETE_ERROR"
+            }
             result = 500
 
     except Exception as error:
-        logging.error(f"[platform_hardware_items_id_delete] Error: {error}")
-        print(error)
+        error_trace = traceback.format_exc()
+        logging.error(f"[platform_hardware_items_id_delete] Unexpected error: {str(error)}")
+        logging.error(f"[platform_hardware_items_id_delete] Full traceback: {error_trace}")
+        print(error_trace)
         result = 500
-        payload = {"message": "An unexpected error occurred while deleting the hardware item"}
+        payload = {
+            "message": f"An unexpected error occurred while deleting the hardware item: {str(error)}",
+            "code": "UNEXPECTED_ERROR"
+        }
 
     return jsonify(payload), result
 

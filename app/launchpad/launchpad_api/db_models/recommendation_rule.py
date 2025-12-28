@@ -73,11 +73,18 @@ class RecommendationRule(db.Model):
             db.session.delete(self)
             db.session.commit()
             return self.id
-        except Exception:
+        except IntegrityError as e:
             db.session.rollback()
             exceptionstring = traceback.format_exc()
             print(exceptionstring)
-            return False
+            # Re-raise IntegrityError so controller can handle it properly
+            raise
+        except Exception as e:
+            db.session.rollback()
+            exceptionstring = traceback.format_exc()
+            print(exceptionstring)
+            # Re-raise other exceptions so controller can handle them
+            raise
 
     @staticmethod
     def get_by_id(rule_id):
