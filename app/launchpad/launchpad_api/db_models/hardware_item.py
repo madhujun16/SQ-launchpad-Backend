@@ -86,7 +86,9 @@ class HardwareItem(db.Model):
     def delete_row(self):
         """Delete this HardwareItem record from the database."""
         try:
-            db.session.delete(self)
+            # Ensure object is in session by merging (handles both attached and detached objects)
+            obj_to_delete = db.session.merge(self)
+            db.session.delete(obj_to_delete)
             db.session.commit()
             return self.id
         except IntegrityError as e:
