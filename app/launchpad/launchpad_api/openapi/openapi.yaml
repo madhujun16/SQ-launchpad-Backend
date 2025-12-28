@@ -626,6 +626,102 @@ paths:
       tags:
       - procurement
       x-openapi-router-controller: app.launchpad.launchpad_api.controllers.procurement_controller
+  /site/{site_id}/go-live:
+    get:
+      operationId: site_go_live_get
+      parameters:
+      - in: path
+        name: site_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Successfully fetched go live data
+        "401":
+          description: Unauthorized
+        "404":
+          description: Go live data not found
+      summary: Get go live data for a site
+      tags:
+      - go-live
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.go_live_controller
+  /site/{site_id}/go-live/activate:
+    post:
+      operationId: site_go_live_activate
+      parameters:
+      - in: path
+        name: site_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoLiveActivateRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Site marked as live successfully
+        "400":
+          description: Bad request (prerequisites not met)
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Site not found
+        "422":
+          description: Validation error
+      summary: Mark site as live
+      tags:
+      - go-live
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.go_live_controller
+  /site/{site_id}/go-live/deactivate:
+    post:
+      operationId: site_go_live_deactivate
+      parameters:
+      - in: path
+        name: site_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GoLiveDeactivateRequest"
+        required: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Site taken offline successfully
+        "400":
+          description: Bad request (site not live)
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Site or go live data not found
+        "422":
+          description: Validation error
+      summary: Mark site as offline
+      tags:
+      - go-live
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.go_live_controller
   /scoping-approvals:
     get:
       operationId: scoping_approvals_get
@@ -1891,6 +1987,25 @@ components:
           type: string
           example: "Cost exceeds budget. Please reduce hardware quantities."
       title: RejectionRequest
+      type: object
+    GoLiveActivateRequest:
+      properties:
+        notes:
+          type: string
+          example: "Site went live successfully. All systems operational. Staff training completed."
+          minLength: 1
+          maxLength: 5000
+      required:
+      - notes
+      title: GoLiveActivateRequest
+      type: object
+    GoLiveDeactivateRequest:
+      properties:
+        notes:
+          type: string
+          example: "Site taken offline for maintenance. Expected to be back online in 2 hours."
+          maxLength: 5000
+      title: GoLiveDeactivateRequest
       type: object
   securitySchemes:
     cookieAuth:
