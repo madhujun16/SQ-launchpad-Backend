@@ -5,6 +5,16 @@ import logging
 from flask import jsonify
 from ..models.page_request import PageRequest  # noqa: E501
 from ..utils import messages ,transform_data
+from ..utils.deployment_utils import (
+    get_default_steps,
+    parse_steps_field,
+    validate_step,
+    validate_step_progression,
+    calculate_progress,
+    are_all_steps_completed,
+    validate_notes_field,
+    validate_installation_fields
+)
 from datetime import datetime
 
 from ..db_models.site import Site
@@ -262,11 +272,82 @@ def page_post(body):  # noqa: E501
             fields = section.fields
 
             all_fields = []
+            
+            # Deployment-specific logic: Initialize default steps for deployment_checklist
+            if page_name == "deployment" and section_name == "deployment_checklist":
+                # Check if steps field exists and is empty
+                steps_field = None
+                for field in fields:
+                    if field.field_name == "steps":
+                        steps_field = field
+                        break
+                
+                # If no steps field or empty, initialize with default steps
+                if not steps_field or not steps_field.field_value:
+                    default_steps = get_default_steps()
+                    # Create or update the steps field
+                    if steps_field:
+                        steps_field.field_value = default_steps
+                    else:
+                        # Create new field for steps
+                        from ..models.page_request_sections_inner_fields_inner import PageRequestSectionsInnerFieldsInner
+                        steps_field = PageRequestSectionsInnerFieldsInner(
+                            field_name="steps",
+                            field_value=default_steps
+                        )
+                        fields.append(steps_field)
+            
             for field in fields:
                 field_name = field.field_name
                 field_value = field.field_value
+                
+                # For deployment page, validate field values
+                if page_name == "deployment":
+                    if section_name == "deployment_checklist" and field_name == "steps":
+                        # Validate steps field
+                        steps = parse_steps_field(field_value)
+                        if steps is None:
+                            result = 400
+                            payload = {"message": "Invalid steps field: must be a valid JSON array"}
+                            return jsonify(payload), result
+                        
+                        # Validate each step
+                        for step in steps:
+                            is_valid, error_msg = validate_step(step)
+                            if not is_valid:
+                                result = 400
+                                payload = {"message": f"Invalid step: {error_msg}"}
+                                return jsonify(payload), result
+                        
+                        # Validate step progression
+                        is_valid, error_msg = validate_step_progression(steps)
+                        if not is_valid:
+                            result = 400
+                            payload = {"message": f"Step progression error: {error_msg}"}
+                            return jsonify(payload), result
+                    
+                    elif section_name == "installation":
+                        # Validate installation fields
+                        installation_fields = {}
+                        for f in fields:
+                            if f.field_name in ["deployment_engineer", "start_date", "target_date", "progress"]:
+                                installation_fields[f.field_name] = f.field_value
+                        
+                        is_valid, error_msg = validate_installation_fields(installation_fields)
+                        if not is_valid:
+                            result = 400
+                            payload = {"message": f"Invalid installation field: {error_msg}"}
+                            return jsonify(payload), result
+                    
+                    elif section_name == "testing" and field_name == "notes":
+                        # Validate notes field
+                        is_valid, notes, error_msg = validate_notes_field(field_value)
+                        if not is_valid:
+                            result = 400
+                            payload = {"message": f"Invalid notes field: {error_msg}"}
+                            return jsonify(payload), result
 
-                new_field = {"field_name":field_name,"field_value":json.dumps(field_value),"section_id":section_id}
+                new_field = {"field_name":field_name,"field_value":json.dumps(field_value) if not isinstance(field_value, str) else field_value,"section_id":section_id}
                 all_fields.append(new_field)
 
 
@@ -360,7 +441,13 @@ def page_put(body):  # noqa: E501
         page.update_row(False) 
         
         
-        sections = page_request.sections       
+        sections = page_request.sections
+        
+        # Deployment-specific logic: Track if we need to update progress or site status
+        deployment_steps_updated = False
+        deployment_steps = None
+        installation_progress_field = None
+        
         for section in sections:
             section_id = section.section_id
             section_detail = Section.get_by_id(section_id)
@@ -383,8 +470,113 @@ def page_put(body):  # noqa: E501
                     payload = {"message":"Invalid Field ID"}
                     return jsonify(payload),result
                 
-                field_detail.field_value = field.field_value
+                # Deployment-specific validation and processing
+                if page.page_name == "deployment":
+                    section_name = section_detail.section_name
+                    field_name = field_detail.field_name
+                    
+                    # Validate and process deployment_checklist section
+                    if section_name == "deployment_checklist" and field_name == "steps":
+                        # Parse and validate steps
+                        steps = parse_steps_field(field.field_value)
+                        if steps is None:
+                            result = 400
+                            payload = {"message": "Invalid steps field: must be a valid JSON array"}
+                            return jsonify(payload), result
+                        
+                        # Validate each step
+                        for step in steps:
+                            is_valid, error_msg = validate_step(step)
+                            if not is_valid:
+                                result = 400
+                                payload = {"message": f"Invalid step: {error_msg}"}
+                                return jsonify(payload), result
+                        
+                        # Validate step progression
+                        is_valid, error_msg = validate_step_progression(steps)
+                        if not is_valid:
+                            result = 400
+                            payload = {"message": f"Step progression error: {error_msg}"}
+                            return jsonify(payload), result
+                        
+                        # Store steps for progress calculation
+                        deployment_steps = steps
+                        deployment_steps_updated = True
+                    
+                    # Validate installation section fields
+                    elif section_name == "installation":
+                        installation_fields = {}
+                        for f in fields:
+                            if f.field_id:
+                                f_detail = Field.get_by_id(f.field_id)
+                                if f_detail and f_detail.field_name in ["deployment_engineer", "start_date", "target_date", "progress"]:
+                                    installation_fields[f_detail.field_name] = f.field_value if hasattr(f, 'field_value') else f_detail.field_value
+                        
+                        is_valid, error_msg = validate_installation_fields(installation_fields)
+                        if not is_valid:
+                            result = 400
+                            payload = {"message": f"Invalid installation field: {error_msg}"}
+                            return jsonify(payload), result
+                        
+                        # Track progress field for auto-update
+                        if field_name == "progress":
+                            installation_progress_field = field_detail
+                    
+                    # Validate testing section notes
+                    elif section_name == "testing" and field_name == "notes":
+                        is_valid, notes, error_msg = validate_notes_field(field.field_value)
+                        if not is_valid:
+                            result = 400
+                            payload = {"message": f"Invalid notes field: {error_msg}"}
+                            return jsonify(payload), result
+                
+                # Update field value
+                # Handle field_value - it might be a string (JSON) or already parsed
+                # SQLAlchemy JSON column automatically handles dict/list, but we need to parse JSON strings
+                field_value_to_store = field.field_value
+                if isinstance(field_value_to_store, str):
+                    # Try to parse as JSON if it's a string
+                    try:
+                        parsed = json.loads(field_value_to_store)
+                        field_value_to_store = parsed  # Store as dict/list for JSON column
+                    except (json.JSONDecodeError, TypeError):
+                        # If it's not valid JSON, store as string
+                        pass
+                # If it's already a dict/list, SQLAlchemy JSON column will handle it
+                
+                field_detail.field_value = field_value_to_store
                 field_detail.update_row(False)
+        
+        # Deployment-specific: Auto-calculate progress and update site status
+        if page.page_name == "deployment" and deployment_steps_updated and deployment_steps:
+            # Calculate progress
+            progress = calculate_progress(deployment_steps)
+            
+            # Update progress field if it exists
+            if installation_progress_field:
+                installation_progress_field.field_value = str(progress)
+                installation_progress_field.update_row(False)
+            else:
+                # Try to find and update progress field
+                deployment_sections = Section.get_by_pageid(page_id)
+                if deployment_sections:
+                    for sec in deployment_sections:
+                        if sec.section_name == "installation":
+                            progress_fields = Field.query.filter(
+                                Field.section_id == sec.id,
+                                Field.field_name == "progress"
+                            ).all()
+                            if progress_fields:
+                                progress_fields[0].field_value = str(progress)
+                                progress_fields[0].update_row(False)
+            
+            # Check if all steps are completed and update site status
+            if are_all_steps_completed(deployment_steps):
+                if site.status != "deployed":
+                    site.status = "deployed"
+                    site.updated_at = datetime.utcnow()
+                    site.update_row(False)
+                    logging.info(f"[page_put] Updated site {site_id} status to 'deployed' - all deployment steps completed")
                 
         db.session.commit()
         result = 200

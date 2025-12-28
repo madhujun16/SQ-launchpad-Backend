@@ -139,12 +139,12 @@ def site_go_live_activate(site_id, body):  # noqa: E501
             payload = {"message": "Site not found"}
             return jsonify(payload), 404
 
-        # Check prerequisites: Site must be in 'procurement_done' status
-        if site.status != 'procurement_done':
+        # Check prerequisites: Site must be in 'deployed' status (deployment must be completed)
+        if site.status != 'deployed':
             payload = {
                 "error": {
                     "code": "PREREQUISITE_NOT_MET",
-                    "message": f"Cannot go live: site status is '{site.status}'. Procurement must be completed first."
+                    "message": f"Cannot go live: site status is '{site.status}'. Deployment must be completed first (all deployment steps must be completed)."
                 }
             }
             return jsonify(payload), 400

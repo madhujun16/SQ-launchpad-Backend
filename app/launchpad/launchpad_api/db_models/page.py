@@ -74,6 +74,7 @@ class Page(db.Model):
             print(exceptionstring)
             return None
     
+    @staticmethod
     def get_by_siteid_and_pagename(site_id,page_name):
         try:
             page = Page.query.filter(Page.site_id==site_id, Page.page_name==page_name).first()
