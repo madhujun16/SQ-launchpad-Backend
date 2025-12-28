@@ -495,8 +495,12 @@ def platform_recommendation_rules_id_delete(id):  # noqa: E501
             if deleted_id:
                 payload = {"message": "Recommendation rule deleted successfully"}
                 result = 200
+            elif deleted_id is None:
+                # Object doesn't exist or was already deleted
+                payload = {"message": "Recommendation rule not found or already deleted"}
+                result = 404
             else:
-                payload = {"message": "Unable to delete recommendation rule - delete operation returned no ID"}
+                payload = {"message": "Unable to delete recommendation rule"}
                 result = 400
         except IntegrityError as e:
             db.session.rollback()
@@ -719,6 +723,10 @@ def platform_software_modules_id_delete(id):  # noqa: E501
             if deleted_id:
                 payload = {"message": "Software module deleted successfully"}
                 result = 200
+            elif deleted_id is None:
+                # Object doesn't exist or was already deleted
+                payload = {"message": "Software module not found or already deleted"}
+                result = 404
             else:
                 payload = {"message": "Unable to delete software module"}
                 result = 400
@@ -1060,6 +1068,10 @@ def platform_hardware_items_id_delete(id):  # noqa: E501
             if deleted_id:
                 payload = {"message": "Hardware item deleted successfully"}
                 result = 200
+            elif deleted_id is None:
+                # Object doesn't exist or was already deleted
+                payload = {"message": "Hardware item not found or already deleted"}
+                result = 404
             else:
                 payload = {"message": "Unable to delete hardware item"}
                 result = 400

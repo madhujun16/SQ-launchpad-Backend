@@ -18,7 +18,7 @@ When trying to delete a detached object, SQLAlchemy raises an error, resulting i
 
 ### Fixed `delete_row()` Methods
 
-Updated all three models to use `db.session.merge()` before deletion:
+Updated all three models to use **query-based delete** instead of session-based delete:
 
 **Before:**
 ```python
@@ -33,19 +33,26 @@ def delete_row(self):
 ```python
 def delete_row(self):
     try:
-        # Ensure object is in session by merging (handles both attached and detached objects)
-        obj_to_delete = db.session.merge(self)
-        db.session.delete(obj_to_delete)
-        db.session.commit()
-        return self.id
+        # Use query-based delete to avoid session state issues
+        # This works regardless of whether the object is attached or detached
+        deleted_count = Model.query.filter_by(id=self.id).delete()
+        if deleted_count > 0:
+            db.session.commit()
+            return self.id
+        else:
+            # Object doesn't exist or already deleted
+            db.session.rollback()
+            return None
 ```
 
-### Why `merge()` Works
+### Why Query-Based Delete Works
 
-`db.session.merge()`:
-- ✅ If object is already in session: Returns the same object (no-op)
-- ✅ If object is detached: Merges it into the session and returns the attached version
-- ✅ Handles both cases seamlessly
+Query-based delete (`Model.query.filter_by(id=self.id).delete()`):
+- ✅ Works regardless of session state (attached or detached)
+- ✅ Directly queries the database by ID
+- ✅ Avoids session management issues entirely
+- ✅ Still raises `IntegrityError` for foreign key violations
+- ✅ Returns count of deleted rows (0 if not found)
 
 ## 📁 Files Updated
 

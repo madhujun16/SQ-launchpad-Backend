@@ -1,5 +1,6 @@
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
+import logging
 from ..db import db
 import traceback
 
@@ -86,20 +87,30 @@ class HardwareItem(db.Model):
     def delete_row(self):
         """Delete this HardwareItem record from the database."""
         try:
-            # Ensure object is in session by merging (handles both attached and detached objects)
-            obj_to_delete = db.session.merge(self)
-            db.session.delete(obj_to_delete)
-            db.session.commit()
-            return self.id
+            # Use query-based delete to avoid session state issues
+            # This works regardless of whether the object is attached or detached
+            deleted_count = HardwareItem.query.filter_by(id=self.id).delete()
+            if deleted_count > 0:
+                db.session.commit()
+                return self.id
+            else:
+                # Object doesn't exist or already deleted
+                db.session.rollback()
+                return None
         except IntegrityError as e:
             db.session.rollback()
             exceptionstring = traceback.format_exc()
+            logging.error(f"[HardwareItem.delete_row] IntegrityError: {str(e)}")
+            logging.error(f"[HardwareItem.delete_row] Full traceback: {exceptionstring}")
             print(exceptionstring)
             # Re-raise IntegrityError so controller can handle it properly
             raise
         except Exception as e:
             db.session.rollback()
             exceptionstring = traceback.format_exc()
+            error_type = type(e).__name__
+            logging.error(f"[HardwareItem.delete_row] Error ({error_type}): {str(e)}")
+            logging.error(f"[HardwareItem.delete_row] Full traceback: {exceptionstring}")
             print(exceptionstring)
             # Re-raise other exceptions so controller can handle them
             raise

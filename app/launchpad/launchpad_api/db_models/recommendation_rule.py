@@ -71,11 +71,16 @@ class RecommendationRule(db.Model):
     def delete_row(self):
         """Delete this RecommendationRule record from the database."""
         try:
-            # Ensure object is in session by merging (handles both attached and detached objects)
-            obj_to_delete = db.session.merge(self)
-            db.session.delete(obj_to_delete)
-            db.session.commit()
-            return self.id
+            # Use query-based delete to avoid session state issues
+            # This works regardless of whether the object is attached or detached
+            deleted_count = RecommendationRule.query.filter_by(id=self.id).delete()
+            if deleted_count > 0:
+                db.session.commit()
+                return self.id
+            else:
+                # Object doesn't exist or already deleted
+                db.session.rollback()
+                return None
         except IntegrityError as e:
             db.session.rollback()
             exceptionstring = traceback.format_exc()
