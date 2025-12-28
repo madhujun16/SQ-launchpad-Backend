@@ -1,7 +1,9 @@
 import connexion
 from flask import jsonify, request
 import logging
+from sqlalchemy.exc import IntegrityError
 from ..utils.messages import generic_message
+from ..db import db
 from ..db_models.software_category import SoftwareCategory
 from ..db_models.software_module import SoftwareModule
 from ..db_models.hardware_category import HardwareCategory
@@ -334,21 +336,36 @@ def platform_software_modules_id_put(id, body):  # noqa: E501
         if "is_active" in request_json:
             module.is_active = request_json["is_active"]
 
-        if module.update_row():
-            payload = {
-                "message": "Software module updated successfully",
-                "data": module.to_dict()
-            }
-            result = 200
-        else:
-            payload = {"message": "Unable to update software module"}
+        try:
+            if module.update_row():
+                payload = {
+                    "message": "Software module updated successfully",
+                    "data": module.to_dict()
+                }
+                result = 200
+            else:
+                payload = {"message": "Unable to update software module"}
+                result = 400
+        except IntegrityError as e:
+            db.session.rollback()
+            logging.error(f"[platform_software_modules_id_put] IntegrityError: {str(e)}")
+            payload = {"message": "Unable to update software module: database constraint violation"}
             result = 400
+        except Exception as db_error:
+            db.session.rollback()
+            logging.error(f"[platform_software_modules_id_put] Database error: {str(db_error)}")
+            payload = {"message": "Unable to update software module due to database error"}
+            result = 500
 
+    except ValueError as ve:
+        logging.error(f"[platform_software_modules_id_put] ValueError: {str(ve)}")
+        payload = {"message": f"Invalid input: {str(ve)}"}
+        result = 400
     except Exception as error:
         logging.error(f"[platform_software_modules_id_put] Error: {error}")
         print(error)
-        result = 400
-        payload = {"message": generic_message}
+        result = 500
+        payload = {"message": "An unexpected error occurred while updating the software module"}
 
     return jsonify(payload), result
 
@@ -380,18 +397,32 @@ def platform_software_modules_id_delete(id):  # noqa: E501
             payload = {"message": "Software module not found"}
             return jsonify(payload), 404
 
-        if module.delete_row():
-            payload = {"message": "Software module deleted successfully"}
-            result = 200
-        else:
-            payload = {"message": "Unable to delete software module"}
-            result = 400
+        try:
+            if module.delete_row():
+                payload = {"message": "Software module deleted successfully"}
+                result = 200
+            else:
+                payload = {"message": "Unable to delete software module"}
+                result = 400
+        except IntegrityError as e:
+            db.session.rollback()
+            logging.error(f"[platform_software_modules_id_delete] IntegrityError: {str(e)}")
+            payload = {
+                "message": "Cannot delete software module: it is referenced by other records",
+                "code": "MODULE_IN_USE"
+            }
+            result = 409
+        except Exception as db_error:
+            db.session.rollback()
+            logging.error(f"[platform_software_modules_id_delete] Database error: {str(db_error)}")
+            payload = {"message": "Unable to delete software module due to database error"}
+            result = 500
 
     except Exception as error:
         logging.error(f"[platform_software_modules_id_delete] Error: {error}")
         print(error)
-        result = 400
-        payload = {"message": generic_message}
+        result = 500
+        payload = {"message": "An unexpected error occurred while deleting the software module"}
 
     return jsonify(payload), result
 
@@ -621,7 +652,11 @@ def platform_hardware_items_id_put(id, body):  # noqa: E501
         if "configuration_notes" in request_json:
             item.configuration_notes = request_json["configuration_notes"]
         if "unit_cost" in request_json:
-            item.unit_cost = float(request_json["unit_cost"])
+            unit_cost = float(request_json["unit_cost"])
+            if unit_cost < 0:
+                payload = {"message": "unit_cost must be a positive number"}
+                return jsonify(payload), 400
+            item.unit_cost = unit_cost
         if "support_type" in request_json:
             item.support_type = request_json["support_type"]
         if "support_cost" in request_json:
@@ -629,21 +664,36 @@ def platform_hardware_items_id_put(id, body):  # noqa: E501
         if "is_active" in request_json:
             item.is_active = request_json["is_active"]
 
-        if item.update_row():
-            payload = {
-                "message": "Hardware item updated successfully",
-                "data": item.to_dict()
-            }
-            result = 200
-        else:
-            payload = {"message": "Unable to update hardware item"}
+        try:
+            if item.update_row():
+                payload = {
+                    "message": "Hardware item updated successfully",
+                    "data": item.to_dict()
+                }
+                result = 200
+            else:
+                payload = {"message": "Unable to update hardware item"}
+                result = 400
+        except IntegrityError as e:
+            db.session.rollback()
+            logging.error(f"[platform_hardware_items_id_put] IntegrityError: {str(e)}")
+            payload = {"message": "Unable to update hardware item: database constraint violation"}
             result = 400
+        except Exception as db_error:
+            db.session.rollback()
+            logging.error(f"[platform_hardware_items_id_put] Database error: {str(db_error)}")
+            payload = {"message": "Unable to update hardware item due to database error"}
+            result = 500
 
+    except ValueError as ve:
+        logging.error(f"[platform_hardware_items_id_put] ValueError: {str(ve)}")
+        payload = {"message": f"Invalid input: {str(ve)}"}
+        result = 400
     except Exception as error:
         logging.error(f"[platform_hardware_items_id_put] Error: {error}")
         print(error)
-        result = 400
-        payload = {"message": generic_message}
+        result = 500
+        payload = {"message": "An unexpected error occurred while updating the hardware item"}
 
     return jsonify(payload), result
 
@@ -675,18 +725,32 @@ def platform_hardware_items_id_delete(id):  # noqa: E501
             payload = {"message": "Hardware item not found"}
             return jsonify(payload), 404
 
-        if item.delete_row():
-            payload = {"message": "Hardware item deleted successfully"}
-            result = 200
-        else:
-            payload = {"message": "Unable to delete hardware item"}
-            result = 400
+        try:
+            if item.delete_row():
+                payload = {"message": "Hardware item deleted successfully"}
+                result = 200
+            else:
+                payload = {"message": "Unable to delete hardware item"}
+                result = 400
+        except IntegrityError as e:
+            db.session.rollback()
+            logging.error(f"[platform_hardware_items_id_delete] IntegrityError: {str(e)}")
+            payload = {
+                "message": "Cannot delete hardware item: it is referenced by other records",
+                "code": "ITEM_IN_USE"
+            }
+            result = 409
+        except Exception as db_error:
+            db.session.rollback()
+            logging.error(f"[platform_hardware_items_id_delete] Database error: {str(db_error)}")
+            payload = {"message": "Unable to delete hardware item due to database error"}
+            result = 500
 
     except Exception as error:
         logging.error(f"[platform_hardware_items_id_delete] Error: {error}")
         print(error)
-        result = 400
-        payload = {"message": generic_message}
+        result = 500
+        payload = {"message": "An unexpected error occurred while deleting the hardware item"}
 
     return jsonify(payload), result
 
@@ -887,21 +951,36 @@ def platform_software_categories_id_put(id, body):  # noqa: E501
         if "is_active" in request_json:
             category.is_active = request_json["is_active"]
 
-        if category.update_row():
-            payload = {
-                "message": "Software category updated successfully",
-                "data": category.to_dict()
-            }
-            result = 200
-        else:
-            payload = {"message": "Unable to update software category"}
+        try:
+            if category.update_row():
+                payload = {
+                    "message": "Software category updated successfully",
+                    "data": category.to_dict()
+                }
+                result = 200
+            else:
+                payload = {"message": "Unable to update software category"}
+                result = 400
+        except IntegrityError as e:
+            db.session.rollback()
+            logging.error(f"[platform_software_categories_id_put] IntegrityError: {str(e)}")
+            payload = {"message": "Unable to update software category: database constraint violation"}
             result = 400
+        except Exception as db_error:
+            db.session.rollback()
+            logging.error(f"[platform_software_categories_id_put] Database error: {str(db_error)}")
+            payload = {"message": "Unable to update software category due to database error"}
+            result = 500
 
+    except ValueError as ve:
+        logging.error(f"[platform_software_categories_id_put] ValueError: {str(ve)}")
+        payload = {"message": f"Invalid input: {str(ve)}"}
+        result = 400
     except Exception as error:
         logging.error(f"[platform_software_categories_id_put] Error: {error}")
         print(error)
-        result = 400
-        payload = {"message": generic_message}
+        result = 500
+        payload = {"message": "An unexpected error occurred while updating the software category"}
 
     return jsonify(payload), result
 
@@ -934,22 +1013,40 @@ def platform_software_categories_id_delete(id):  # noqa: E501
             return jsonify(payload), 404
 
         # Check if category has associated modules
-        if category.modules:
-            payload = {"message": "Cannot delete category with associated software modules"}
-            return jsonify(payload), 400
+        module_count = len(category.modules) if category.modules else 0
+        if module_count > 0:
+            payload = {
+                "message": f"Cannot delete category: it is in use by {module_count} software module{'s' if module_count > 1 else ''}",
+                "code": "CATEGORY_IN_USE"
+            }
+            return jsonify(payload), 409
 
-        if category.delete_row():
-            payload = {"message": "Software category deleted successfully"}
-            result = 200
-        else:
-            payload = {"message": "Unable to delete software category"}
-            result = 400
+        try:
+            if category.delete_row():
+                payload = {"message": "Software category deleted successfully"}
+                result = 200
+            else:
+                payload = {"message": "Unable to delete software category"}
+                result = 400
+        except IntegrityError as e:
+            db.session.rollback()
+            logging.error(f"[platform_software_categories_id_delete] IntegrityError: {str(e)}")
+            payload = {
+                "message": "Cannot delete category: it is referenced by other records",
+                "code": "CATEGORY_IN_USE"
+            }
+            result = 409
+        except Exception as db_error:
+            db.session.rollback()
+            logging.error(f"[platform_software_categories_id_delete] Database error: {str(db_error)}")
+            payload = {"message": "Unable to delete software category due to database error"}
+            result = 500
 
     except Exception as error:
         logging.error(f"[platform_software_categories_id_delete] Error: {error}")
         print(error)
-        result = 400
-        payload = {"message": generic_message}
+        result = 500
+        payload = {"message": "An unexpected error occurred while deleting the software category"}
 
     return jsonify(payload), result
 
@@ -1056,21 +1153,36 @@ def platform_hardware_categories_id_put(id, body):  # noqa: E501
         if "is_active" in request_json:
             category.is_active = request_json["is_active"]
 
-        if category.update_row():
-            payload = {
-                "message": "Hardware category updated successfully",
-                "data": category.to_dict()
-            }
-            result = 200
-        else:
-            payload = {"message": "Unable to update hardware category"}
+        try:
+            if category.update_row():
+                payload = {
+                    "message": "Hardware category updated successfully",
+                    "data": category.to_dict()
+                }
+                result = 200
+            else:
+                payload = {"message": "Unable to update hardware category"}
+                result = 400
+        except IntegrityError as e:
+            db.session.rollback()
+            logging.error(f"[platform_hardware_categories_id_put] IntegrityError: {str(e)}")
+            payload = {"message": "Unable to update hardware category: database constraint violation"}
             result = 400
+        except Exception as db_error:
+            db.session.rollback()
+            logging.error(f"[platform_hardware_categories_id_put] Database error: {str(db_error)}")
+            payload = {"message": "Unable to update hardware category due to database error"}
+            result = 500
 
+    except ValueError as ve:
+        logging.error(f"[platform_hardware_categories_id_put] ValueError: {str(ve)}")
+        payload = {"message": f"Invalid input: {str(ve)}"}
+        result = 400
     except Exception as error:
         logging.error(f"[platform_hardware_categories_id_put] Error: {error}")
         print(error)
-        result = 400
-        payload = {"message": generic_message}
+        result = 500
+        payload = {"message": "An unexpected error occurred while updating the hardware category"}
 
     return jsonify(payload), result
 
@@ -1103,22 +1215,40 @@ def platform_hardware_categories_id_delete(id):  # noqa: E501
             return jsonify(payload), 404
 
         # Check if category has associated items
-        if category.items:
-            payload = {"message": "Cannot delete category with associated hardware items"}
-            return jsonify(payload), 400
+        item_count = len(category.items) if category.items else 0
+        if item_count > 0:
+            payload = {
+                "message": f"Cannot delete category: it is in use by {item_count} hardware item{'s' if item_count > 1 else ''}",
+                "code": "CATEGORY_IN_USE"
+            }
+            return jsonify(payload), 409
 
-        if category.delete_row():
-            payload = {"message": "Hardware category deleted successfully"}
-            result = 200
-        else:
-            payload = {"message": "Unable to delete hardware category"}
-            result = 400
+        try:
+            if category.delete_row():
+                payload = {"message": "Hardware category deleted successfully"}
+                result = 200
+            else:
+                payload = {"message": "Unable to delete hardware category"}
+                result = 400
+        except IntegrityError as e:
+            db.session.rollback()
+            logging.error(f"[platform_hardware_categories_id_delete] IntegrityError: {str(e)}")
+            payload = {
+                "message": "Cannot delete category: it is referenced by other records",
+                "code": "CATEGORY_IN_USE"
+            }
+            result = 409
+        except Exception as db_error:
+            db.session.rollback()
+            logging.error(f"[platform_hardware_categories_id_delete] Database error: {str(db_error)}")
+            payload = {"message": "Unable to delete hardware category due to database error"}
+            result = 500
 
     except Exception as error:
         logging.error(f"[platform_hardware_categories_id_delete] Error: {error}")
         print(error)
-        result = 400
-        payload = {"message": generic_message}
+        result = 500
+        payload = {"message": "An unexpected error occurred while deleting the hardware category"}
 
     return jsonify(payload), result
 
