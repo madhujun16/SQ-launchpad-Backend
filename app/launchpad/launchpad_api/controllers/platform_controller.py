@@ -458,30 +458,45 @@ def platform_recommendation_rules_id_delete(id):  # noqa: E501
 
     :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
     """
-    result = 400
-    payload = {"message": generic_message}
+    result = 500
+    payload = {"message": "An error occurred while deleting the recommendation rule"}
 
     try:
         logging.info(f"[platform_recommendation_rules_id_delete] Deleting recommendation rule id={id}")
         
+        # Validate and convert ID
         try:
             rule_id = int(id)
-        except (TypeError, ValueError):
-            payload = {"message": "Invalid rule ID"}
-            return jsonify(payload), result
+        except (TypeError, ValueError) as ve:
+            logging.warning(f"[platform_recommendation_rules_id_delete] Invalid rule ID: {id}")
+            payload = {"message": f"Invalid rule ID: {id}"}
+            return jsonify(payload), 400
 
-        rule = RecommendationRule.get_by_id(rule_id)
+        # Get the rule
+        try:
+            rule = RecommendationRule.get_by_id(rule_id)
+        except Exception as e:
+            error_trace = traceback.format_exc()
+            logging.error(f"[platform_recommendation_rules_id_delete] Error fetching rule: {str(e)}")
+            logging.error(f"[platform_recommendation_rules_id_delete] Full traceback: {error_trace}")
+            payload = {
+                "message": f"Error fetching recommendation rule: {str(e)}",
+                "code": "FETCH_ERROR"
+            }
+            return jsonify(payload), 500
+
         if not rule:
             payload = {"message": "Recommendation rule not found"}
             return jsonify(payload), 404
 
+        # Delete the rule
         try:
             deleted_id = rule.delete_row()
             if deleted_id:
                 payload = {"message": "Recommendation rule deleted successfully"}
                 result = 200
             else:
-                payload = {"message": "Unable to delete recommendation rule"}
+                payload = {"message": "Unable to delete recommendation rule - delete operation returned no ID"}
                 result = 400
         except IntegrityError as e:
             db.session.rollback()
@@ -496,24 +511,29 @@ def platform_recommendation_rules_id_delete(id):  # noqa: E501
         except Exception as db_error:
             db.session.rollback()
             error_details = str(db_error)
-            logging.error(f"[platform_recommendation_rules_id_delete] Database error: {error_details}")
-            logging.error(f"[platform_recommendation_rules_id_delete] Full error: {traceback.format_exc()}")
+            error_type = type(db_error).__name__
+            error_trace = traceback.format_exc()
+            logging.error(f"[platform_recommendation_rules_id_delete] Database error ({error_type}): {error_details}")
+            logging.error(f"[platform_recommendation_rules_id_delete] Full traceback: {error_trace}")
             payload = {
                 "message": f"Unable to delete recommendation rule: {error_details}",
-                "code": "DELETE_ERROR"
+                "code": "DELETE_ERROR",
+                "errorType": error_type
             }
             result = 500
 
     except Exception as error:
         error_trace = traceback.format_exc()
-        logging.error(f"[platform_recommendation_rules_id_delete] Unexpected error: {str(error)}")
+        error_type = type(error).__name__
+        logging.error(f"[platform_recommendation_rules_id_delete] Unexpected error ({error_type}): {str(error)}")
         logging.error(f"[platform_recommendation_rules_id_delete] Full traceback: {error_trace}")
         print(error_trace)
-        result = 500
         payload = {
             "message": f"An unexpected error occurred while deleting the recommendation rule: {str(error)}",
-            "code": "UNEXPECTED_ERROR"
+            "code": "UNEXPECTED_ERROR",
+            "errorType": error_type
         }
+        result = 500
 
     return jsonify(payload), result
 
