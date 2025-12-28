@@ -434,6 +434,196 @@ paths:
       tags:
       - site
       x-openapi-router-controller: app.launchpad.launchpad_api.controllers.site_controller
+  /site/{site_id}/scoping/submit:
+    post:
+      operationId: site_scoping_submit
+      parameters:
+      - in: path
+        name: site_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScopingSubmissionRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Scoping submitted successfully
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Site not found
+        "409":
+          description: Pending approval already exists
+      summary: Submit scoping for approval
+      tags:
+      - scoping-approval
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.scoping_approval_controller
+  /site/{site_id}/scoping/resubmit:
+    post:
+      operationId: site_scoping_resubmit
+      parameters:
+      - in: path
+        name: site_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScopingResubmissionRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Scoping resubmitted successfully
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Site or previous approval not found
+      summary: Resubmit scoping after rejection
+      tags:
+      - scoping-approval
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.scoping_approval_controller
+  /scoping-approvals:
+    get:
+      operationId: scoping_approvals_get
+      parameters:
+      - in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum: [pending, approved, rejected, changes_requested]
+      - in: query
+        name: site_id
+        required: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Successfully fetched scoping approvals
+        "401":
+          description: Unauthorized
+      summary: Get scoping approvals
+      tags:
+      - scoping-approval
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.scoping_approval_controller
+  /scoping-approvals/{approval_id}:
+    get:
+      operationId: scoping_approvals_id_get
+      parameters:
+      - in: path
+        name: approval_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Successfully fetched scoping approval
+        "401":
+          description: Unauthorized
+        "404":
+          description: Approval not found
+      summary: Get scoping approval by ID
+      tags:
+      - scoping-approval
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.scoping_approval_controller
+  /scoping-approvals/{approval_id}/approve:
+    post:
+      operationId: scoping_approvals_id_approve
+      parameters:
+      - in: path
+        name: approval_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalActionRequest"
+        required: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Scoping approved successfully
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Approval not found
+      summary: Approve a scoping request
+      tags:
+      - scoping-approval
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.scoping_approval_controller
+  /scoping-approvals/{approval_id}/reject:
+    post:
+      operationId: scoping_approvals_id_reject
+      parameters:
+      - in: path
+        name: approval_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectionRequest"
+        required: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Scoping rejected successfully
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Approval not found
+      summary: Reject a scoping request
+      tags:
+      - scoping-approval
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.scoping_approval_controller
   /platform/software-categories:
     get:
       operationId: platform_software_categories_get
@@ -1487,6 +1677,98 @@ components:
       - fields
       - section_name
       title: PageRequest_sections_inner
+      type: object
+    ScopingSubmissionRequest:
+      properties:
+        site_name:
+          type: string
+          example: "Birmingham South Cafeteria"
+        selected_software:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              quantity:
+                type: integer
+        selected_hardware:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              quantity:
+                type: integer
+        cost_summary:
+          type: object
+          properties:
+            hardwareCost:
+              type: number
+            softwareSetupCost:
+              type: number
+            installationCost:
+              type: number
+            contingencyCost:
+              type: number
+            totalCapex:
+              type: number
+            monthlySoftwareFees:
+              type: number
+            maintenanceCost:
+              type: number
+            totalMonthlyOpex:
+              type: number
+            totalInvestment:
+              type: number
+      required:
+      - site_name
+      - selected_software
+      - selected_hardware
+      - cost_summary
+      title: ScopingSubmissionRequest
+      type: object
+    ScopingResubmissionRequest:
+      properties:
+        previous_approval_id:
+          type: integer
+        site_name:
+          type: string
+        selected_software:
+          type: array
+          items:
+            type: object
+        selected_hardware:
+          type: array
+          items:
+            type: object
+        cost_summary:
+          type: object
+      required:
+      - previous_approval_id
+      - site_name
+      - selected_software
+      - selected_hardware
+      - cost_summary
+      title: ScopingResubmissionRequest
+      type: object
+    ApprovalActionRequest:
+      properties:
+        comment:
+          type: string
+          example: "Approved. Proceed with procurement."
+      title: ApprovalActionRequest
+      type: object
+    RejectionRequest:
+      properties:
+        comment:
+          type: string
+          example: "Cost exceeds budget. Please reduce hardware quantities."
+        rejection_reason:
+          type: string
+          example: "Cost exceeds budget. Please reduce hardware quantities."
+      title: RejectionRequest
       type: object
   securitySchemes:
     cookieAuth:
