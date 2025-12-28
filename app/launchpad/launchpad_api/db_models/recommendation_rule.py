@@ -1,5 +1,6 @@
 from datetime import datetime
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import delete
 import logging
 from ..db import db
 import traceback
@@ -71,9 +72,12 @@ class RecommendationRule(db.Model):
     def delete_row(self):
         """Delete this RecommendationRule record from the database."""
         try:
-            # Use query-based delete to avoid session state issues
-            # This works regardless of whether the object is attached or detached
-            deleted_count = RecommendationRule.query.filter_by(id=self.id).delete()
+            # Use SQLAlchemy delete statement for maximum reliability
+            # This approach works regardless of session state
+            stmt = delete(RecommendationRule).where(RecommendationRule.id == self.id)
+            result = db.session.execute(stmt)
+            deleted_count = result.rowcount
+            
             if deleted_count > 0:
                 db.session.commit()
                 return self.id

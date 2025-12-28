@@ -752,14 +752,17 @@ def platform_software_modules_id_delete(id):  # noqa: E501
             result = 500
 
     except Exception as error:
+        db.session.rollback()
         error_trace = traceback.format_exc()
-        logging.error(f"[platform_software_modules_id_delete] Unexpected error: {str(error)}")
+        error_type = type(error).__name__
+        logging.error(f"[platform_software_modules_id_delete] Unexpected error ({error_type}): {str(error)}")
         logging.error(f"[platform_software_modules_id_delete] Full traceback: {error_trace}")
         print(error_trace)
         result = 500
         payload = {
             "message": f"An unexpected error occurred while deleting the software module: {str(error)}",
-            "code": "UNEXPECTED_ERROR"
+            "code": "UNEXPECTED_ERROR",
+            "errorType": error_type
         }
 
     return jsonify(payload), result
