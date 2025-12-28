@@ -86,14 +86,25 @@ class RecommendationRule(db.Model):
 
     @staticmethod
     def get_all(category_ids=None):
-        """Fetch all RecommendationRule records with optional filters."""
+        """Fetch all RecommendationRule records with optional filters.
+        
+        Args:
+            category_ids: List of software category IDs to filter by.
+                         Only filters by software_category_id, not hardware_category_id.
+        """
         try:
             query = RecommendationRule.query
             if category_ids:
-                query = query.filter(
-                    (RecommendationRule.software_category_id.in_(category_ids)) |
-                    (RecommendationRule.hardware_category_id.in_(category_ids))
-                )
+                # Filter only by software_category_id (not hardware_category_id)
+                query = query.filter(RecommendationRule.software_category_id.in_(category_ids))
+            
+            # Order by software_category_id, then is_mandatory (DESC), then hardware_category_id
+            query = query.order_by(
+                RecommendationRule.software_category_id,
+                RecommendationRule.is_mandatory.desc(),
+                RecommendationRule.hardware_category_id
+            )
+            
             return query.all()
         except Exception:
             exceptionstring = traceback.format_exc()
