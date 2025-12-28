@@ -14,6 +14,8 @@ class SoftwareModule(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    # Relationship to SoftwareCategory is defined via backref in SoftwareCategory model
+
     def __init__(self, name, category_id, description=None, license_fee=None, is_active=True):
         self.name = name
         self.category_id = category_id

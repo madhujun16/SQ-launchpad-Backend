@@ -46,6 +46,43 @@ def platform_software_categories_get():  # noqa: E501
     return jsonify(payload), result
 
 
+def platform_hardware_categories_get():  # noqa: E501
+    """Get list of hardware categories
+
+     # noqa: E501
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message": generic_message}
+
+    try:
+        logging.info("[platform_hardware_categories_get] Fetching hardware categories")
+        
+        # Get optional query parameters
+        is_active = request.args.get('is_active', type=str)
+        active_only = None
+        if is_active:
+            active_only = is_active.lower() == 'true'
+
+        categories = HardwareCategory.get_all(active_only=active_only) or []
+        categories_data = [cat.to_dict() for cat in categories]
+
+        payload = {
+            "message": "Successfully fetched hardware categories",
+            "data": categories_data
+        }
+        result = 200
+
+    except Exception as error:
+        logging.error(f"[platform_hardware_categories_get] Error: {error}")
+        print(error)
+        result = 400
+        payload = {"message": generic_message}
+
+    return jsonify(payload), result
+
+
 def platform_software_modules_get():  # noqa: E501
     """Get list of software modules
 
@@ -741,6 +778,344 @@ def platform_hardware_items_id_unarchive_put(id):  # noqa: E501
 
     except Exception as error:
         logging.error(f"[platform_hardware_items_id_unarchive_put] Error: {error}")
+        print(error)
+        result = 400
+        payload = {"message": generic_message}
+
+    return jsonify(payload), result
+
+
+def platform_software_categories_post(body):  # noqa: E501
+    """Create a new software category
+
+     # noqa: E501
+
+    :param body: 
+    :type body: dict | bytes
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message": generic_message}
+
+    try:
+        logging.info("[platform_software_categories_post] Creating software category")
+        request_json = connexion.request.get_json() if connexion.request.is_json else (body or {})
+
+        name = request_json.get("name")
+        description = request_json.get("description")
+        is_active = request_json.get("is_active", True)
+
+        if not name:
+            payload = {"message": "name is required"}
+            return jsonify(payload), result
+
+        # Check if category with same name already exists
+        existing_categories = SoftwareCategory.get_all(active_only=False) or []
+        if any(cat.name.lower() == name.lower() for cat in existing_categories):
+            payload = {"message": "Category with this name already exists"}
+            return jsonify(payload), 400
+
+        category = SoftwareCategory(
+            name=name,
+            description=description,
+            is_active=is_active
+        )
+
+        created_category = category.create_row()
+
+        if created_category:
+            payload = {
+                "message": "Software category created successfully",
+                "data": created_category.to_dict()
+            }
+            result = 200
+        else:
+            payload = {"message": "Unable to create software category"}
+            result = 400
+
+    except Exception as error:
+        logging.error(f"[platform_software_categories_post] Error: {error}")
+        print(error)
+        result = 400
+        payload = {"message": generic_message}
+
+    return jsonify(payload), result
+
+
+def platform_software_categories_id_put(id, body):  # noqa: E501
+    """Update an existing software category
+
+     # noqa: E501
+
+    :param id: 
+    :type id: int
+    :param body: 
+    :type body: dict | bytes
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message": generic_message}
+
+    try:
+        logging.info(f"[platform_software_categories_id_put] Updating software category id={id}")
+        
+        try:
+            category_id = int(id)
+        except (TypeError, ValueError):
+            payload = {"message": "Invalid category ID"}
+            return jsonify(payload), result
+
+        category = SoftwareCategory.get_by_id(category_id)
+        if not category:
+            payload = {"message": "Software category not found"}
+            return jsonify(payload), 404
+
+        request_json = connexion.request.get_json() if connexion.request.is_json else (body or {})
+
+        # Update fields if provided
+        if "name" in request_json:
+            # Check if another category with same name exists
+            existing_categories = SoftwareCategory.get_all(active_only=False) or []
+            if any(cat.id != category_id and cat.name.lower() == request_json["name"].lower() for cat in existing_categories):
+                payload = {"message": "Category with this name already exists"}
+                return jsonify(payload), 400
+            category.name = request_json["name"]
+        if "description" in request_json:
+            category.description = request_json["description"]
+        if "is_active" in request_json:
+            category.is_active = request_json["is_active"]
+
+        if category.update_row():
+            payload = {
+                "message": "Software category updated successfully",
+                "data": category.to_dict()
+            }
+            result = 200
+        else:
+            payload = {"message": "Unable to update software category"}
+            result = 400
+
+    except Exception as error:
+        logging.error(f"[platform_software_categories_id_put] Error: {error}")
+        print(error)
+        result = 400
+        payload = {"message": generic_message}
+
+    return jsonify(payload), result
+
+
+def platform_software_categories_id_delete(id):  # noqa: E501
+    """Delete a software category
+
+     # noqa: E501
+
+    :param id: 
+    :type id: int
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message": generic_message}
+
+    try:
+        logging.info(f"[platform_software_categories_id_delete] Deleting software category id={id}")
+        
+        try:
+            category_id = int(id)
+        except (TypeError, ValueError):
+            payload = {"message": "Invalid category ID"}
+            return jsonify(payload), result
+
+        category = SoftwareCategory.get_by_id(category_id)
+        if not category:
+            payload = {"message": "Software category not found"}
+            return jsonify(payload), 404
+
+        # Check if category has associated modules
+        if category.modules:
+            payload = {"message": "Cannot delete category with associated software modules"}
+            return jsonify(payload), 400
+
+        if category.delete_row():
+            payload = {"message": "Software category deleted successfully"}
+            result = 200
+        else:
+            payload = {"message": "Unable to delete software category"}
+            result = 400
+
+    except Exception as error:
+        logging.error(f"[platform_software_categories_id_delete] Error: {error}")
+        print(error)
+        result = 400
+        payload = {"message": generic_message}
+
+    return jsonify(payload), result
+
+
+def platform_hardware_categories_post(body):  # noqa: E501
+    """Create a new hardware category
+
+     # noqa: E501
+
+    :param body: 
+    :type body: dict | bytes
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message": generic_message}
+
+    try:
+        logging.info("[platform_hardware_categories_post] Creating hardware category")
+        request_json = connexion.request.get_json() if connexion.request.is_json else (body or {})
+
+        name = request_json.get("name")
+        description = request_json.get("description")
+        is_active = request_json.get("is_active", True)
+
+        if not name:
+            payload = {"message": "name is required"}
+            return jsonify(payload), result
+
+        # Check if category with same name already exists
+        existing_categories = HardwareCategory.get_all(active_only=False) or []
+        if any(cat.name.lower() == name.lower() for cat in existing_categories):
+            payload = {"message": "Category with this name already exists"}
+            return jsonify(payload), 400
+
+        category = HardwareCategory(
+            name=name,
+            description=description,
+            is_active=is_active
+        )
+
+        created_category = category.create_row()
+
+        if created_category:
+            payload = {
+                "message": "Hardware category created successfully",
+                "data": created_category.to_dict()
+            }
+            result = 200
+        else:
+            payload = {"message": "Unable to create hardware category"}
+            result = 400
+
+    except Exception as error:
+        logging.error(f"[platform_hardware_categories_post] Error: {error}")
+        print(error)
+        result = 400
+        payload = {"message": generic_message}
+
+    return jsonify(payload), result
+
+
+def platform_hardware_categories_id_put(id, body):  # noqa: E501
+    """Update an existing hardware category
+
+     # noqa: E501
+
+    :param id: 
+    :type id: int
+    :param body: 
+    :type body: dict | bytes
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message": generic_message}
+
+    try:
+        logging.info(f"[platform_hardware_categories_id_put] Updating hardware category id={id}")
+        
+        try:
+            category_id = int(id)
+        except (TypeError, ValueError):
+            payload = {"message": "Invalid category ID"}
+            return jsonify(payload), result
+
+        category = HardwareCategory.get_by_id(category_id)
+        if not category:
+            payload = {"message": "Hardware category not found"}
+            return jsonify(payload), 404
+
+        request_json = connexion.request.get_json() if connexion.request.is_json else (body or {})
+
+        # Update fields if provided
+        if "name" in request_json:
+            # Check if another category with same name exists
+            existing_categories = HardwareCategory.get_all(active_only=False) or []
+            if any(cat.id != category_id and cat.name.lower() == request_json["name"].lower() for cat in existing_categories):
+                payload = {"message": "Category with this name already exists"}
+                return jsonify(payload), 400
+            category.name = request_json["name"]
+        if "description" in request_json:
+            category.description = request_json["description"]
+        if "is_active" in request_json:
+            category.is_active = request_json["is_active"]
+
+        if category.update_row():
+            payload = {
+                "message": "Hardware category updated successfully",
+                "data": category.to_dict()
+            }
+            result = 200
+        else:
+            payload = {"message": "Unable to update hardware category"}
+            result = 400
+
+    except Exception as error:
+        logging.error(f"[platform_hardware_categories_id_put] Error: {error}")
+        print(error)
+        result = 400
+        payload = {"message": generic_message}
+
+    return jsonify(payload), result
+
+
+def platform_hardware_categories_id_delete(id):  # noqa: E501
+    """Delete a hardware category
+
+     # noqa: E501
+
+    :param id: 
+    :type id: int
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message": generic_message}
+
+    try:
+        logging.info(f"[platform_hardware_categories_id_delete] Deleting hardware category id={id}")
+        
+        try:
+            category_id = int(id)
+        except (TypeError, ValueError):
+            payload = {"message": "Invalid category ID"}
+            return jsonify(payload), result
+
+        category = HardwareCategory.get_by_id(category_id)
+        if not category:
+            payload = {"message": "Hardware category not found"}
+            return jsonify(payload), 404
+
+        # Check if category has associated items
+        if category.items:
+            payload = {"message": "Cannot delete category with associated hardware items"}
+            return jsonify(payload), 400
+
+        if category.delete_row():
+            payload = {"message": "Hardware category deleted successfully"}
+            result = 200
+        else:
+            payload = {"message": "Unable to delete hardware category"}
+            result = 400
+
+    except Exception as error:
+        logging.error(f"[platform_hardware_categories_id_delete] Error: {error}")
         print(error)
         result = 400
         payload = {"message": generic_message}

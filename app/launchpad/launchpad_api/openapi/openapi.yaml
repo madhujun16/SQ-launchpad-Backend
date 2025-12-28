@@ -456,6 +456,164 @@ paths:
       tags:
       - platform
       x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+    post:
+      operationId: platform_software_categories_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Software category created successfully
+      summary: Create a new software category
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/software-categories/{id}:
+    put:
+      operationId: platform_software_categories_id_put
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Software category updated successfully
+      summary: Update an existing software category
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+    delete:
+      operationId: platform_software_categories_id_delete
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Software category deleted successfully
+      summary: Delete a software category
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/hardware-categories:
+    get:
+      operationId: platform_hardware_categories_get
+      parameters:
+      - explode: true
+        in: query
+        name: is_active
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Successfully fetched hardware categories
+      summary: Get list of hardware categories
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+    post:
+      operationId: platform_hardware_categories_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Hardware category created successfully
+      summary: Create a new hardware category
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/hardware-categories/{id}:
+    put:
+      operationId: platform_hardware_categories_id_put
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Hardware category updated successfully
+      summary: Update an existing hardware category
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+    delete:
+      operationId: platform_hardware_categories_id_delete
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Hardware category deleted successfully
+      summary: Delete a hardware category
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
   /platform/software-modules:
     get:
       operationId: platform_software_modules_get
