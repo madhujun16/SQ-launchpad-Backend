@@ -16,20 +16,20 @@ class ApprovalAction(db.Model):
     performed_by_role = db.Column(db.String(50), nullable=False)
     performed_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     comment = db.Column(db.Text, nullable=True)
-    metadata = db.Column(db.JSON, nullable=True)
+    action_metadata = db.Column(db.JSON, nullable=True)  # Renamed from 'metadata' (reserved in SQLAlchemy)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationships
     approval = db.relationship('ScopingApproval', backref=db.backref('actions', lazy=True))
     performer = db.relationship('User', backref='approval_actions')
 
-    def __init__(self, approval_id, action, performed_by, performed_by_role, comment=None, metadata=None):
+    def __init__(self, approval_id, action, performed_by, performed_by_role, comment=None, action_metadata=None):
         self.approval_id = approval_id
         self.action = action
         self.performed_by = performed_by
         self.performed_by_role = performed_by_role
         self.comment = comment
-        self.metadata = metadata if isinstance(metadata, dict) else json.loads(metadata) if isinstance(metadata, str) else metadata
+        self.action_metadata = action_metadata if isinstance(action_metadata, dict) else json.loads(action_metadata) if isinstance(action_metadata, str) else action_metadata
 
     def __repr__(self):
         return f"<ApprovalAction(id={self.id}, approval_id={self.approval_id}, action='{self.action}')>"
@@ -44,7 +44,7 @@ class ApprovalAction(db.Model):
             'performed_by_role': self.performed_by_role,
             'performed_at': self.performed_at.isoformat() if self.performed_at else None,
             'comment': self.comment,
-            'metadata': self.metadata,
+            'metadata': self.action_metadata,  # Map to 'metadata' in API response for backward compatibility
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

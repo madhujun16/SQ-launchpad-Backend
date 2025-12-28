@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS approval_actions (
   performed_by_role VARCHAR(50) NOT NULL,
   performed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   comment TEXT NULL,
-  metadata JSON NULL,
+  action_metadata JSON NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (approval_id) REFERENCES scoping_approvals(id) ON DELETE CASCADE,
   FOREIGN KEY (performed_by) REFERENCES users(id),
