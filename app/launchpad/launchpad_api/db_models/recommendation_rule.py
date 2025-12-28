@@ -1,4 +1,5 @@
 from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 from ..db import db
 import traceback
 
@@ -44,6 +45,11 @@ class RecommendationRule(db.Model):
             db.session.add(self)
             db.session.commit()
             return self
+        except IntegrityError:
+            db.session.rollback()
+            exceptionstring = traceback.format_exc()
+            print(exceptionstring)
+            return None  # Return None for duplicate/constraint violations
         except Exception:
             db.session.rollback()
             exceptionstring = traceback.format_exc()
@@ -106,6 +112,31 @@ class RecommendationRule(db.Model):
             )
             
             return query.all()
+        except Exception:
+            exceptionstring = traceback.format_exc()
+            print(exceptionstring)
+            return None
+
+    @staticmethod
+    def get_by_categories(software_category_id, hardware_category_id, exclude_id=None):
+        """Check if a recommendation rule exists for the given category combination.
+        
+        Args:
+            software_category_id: Software category ID
+            hardware_category_id: Hardware category ID
+            exclude_id: Optional rule ID to exclude from check (for updates)
+        
+        Returns:
+            RecommendationRule if found, None otherwise
+        """
+        try:
+            query = RecommendationRule.query.filter_by(
+                software_category_id=software_category_id,
+                hardware_category_id=hardware_category_id
+            )
+            if exclude_id:
+                query = query.filter(RecommendationRule.id != exclude_id)
+            return query.first()
         except Exception:
             exceptionstring = traceback.format_exc()
             print(exceptionstring)

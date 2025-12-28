@@ -918,6 +918,110 @@ paths:
       tags:
       - platform
       x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+    post:
+      operationId: platform_recommendation_rules_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Recommendation rule created successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Bad request - validation error
+        "409":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Conflict - duplicate rule exists
+      summary: Create a new recommendation rule
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+  /platform/recommendation-rules/{id}:
+    put:
+      operationId: platform_recommendation_rules_id_put
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Recommendation rule updated successfully
+        "400":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Bad request - validation error
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Recommendation rule not found
+        "409":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Conflict - duplicate rule exists
+      summary: Update an existing recommendation rule
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
+    delete:
+      operationId: platform_recommendation_rules_id_delete
+      parameters:
+      - explode: true
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Recommendation rule deleted successfully
+        "404":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Recommendation rule not found
+      summary: Delete a recommendation rule
+      tags:
+      - platform
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.platform_controller
   /user:
     delete:
       operationId: user_delete

@@ -221,6 +221,281 @@ def platform_recommendation_rules_get():  # noqa: E501
     return jsonify(payload), result
 
 
+def platform_recommendation_rules_post(body):  # noqa: E501
+    """Create a new recommendation rule
+
+     # noqa: E501
+
+    :param body: 
+    :type body: dict | bytes
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message": generic_message}
+
+    try:
+        logging.info("[platform_recommendation_rules_post] Creating recommendation rule")
+        request_json = connexion.request.get_json() if connexion.request.is_json else (body or {})
+
+        software_category = request_json.get("software_category")
+        hardware_category = request_json.get("hardware_category")
+        is_mandatory = request_json.get("is_mandatory", False)
+        quantity = request_json.get("quantity", 1)
+
+        # Validation
+        if not software_category:
+            payload = {"message": "software_category is required"}
+            return jsonify(payload), result
+
+        if not hardware_category:
+            payload = {"message": "hardware_category is required"}
+            return jsonify(payload), result
+
+        try:
+            software_category_id = int(software_category)
+            hardware_category_id = int(hardware_category)
+        except (TypeError, ValueError):
+            payload = {"message": "Invalid category ID format"}
+            return jsonify(payload), result
+
+        if quantity < 1:
+            payload = {"message": "quantity must be >= 1", "code": "INVALID_QUANTITY"}
+            return jsonify(payload), result
+
+        if not isinstance(is_mandatory, bool):
+            payload = {"message": "is_mandatory must be a boolean"}
+            return jsonify(payload), result
+
+        # Validate categories exist
+        software_cat = SoftwareCategory.get_by_id(software_category_id)
+        if not software_cat:
+            payload = {"message": "Invalid software_category ID", "code": "INVALID_CATEGORY"}
+            return jsonify(payload), result
+
+        hardware_cat = HardwareCategory.get_by_id(hardware_category_id)
+        if not hardware_cat:
+            payload = {"message": "Invalid hardware_category ID", "code": "INVALID_CATEGORY"}
+            return jsonify(payload), result
+
+        # Check for duplicate rule
+        existing_rule = RecommendationRule.get_by_categories(software_category_id, hardware_category_id)
+        if existing_rule:
+            payload = {
+                "message": "Recommendation rule already exists for this software and hardware category combination",
+                "code": "DUPLICATE_RULE"
+            }
+            return jsonify(payload), 409
+
+        # Create the rule
+        rule = RecommendationRule(
+            software_category_id=software_category_id,
+            hardware_category_id=hardware_category_id,
+            is_mandatory=is_mandatory,
+            quantity=quantity
+        )
+
+        created_rule = rule.create_row()
+
+        if created_rule:
+            payload = {
+                "message": "Recommendation rule created successfully",
+                "data": created_rule.to_dict()
+            }
+            result = 200
+        elif created_rule is None:
+            # IntegrityError (duplicate constraint)
+            payload = {
+                "message": "Recommendation rule already exists for this software and hardware category combination",
+                "code": "DUPLICATE_RULE"
+            }
+            result = 409
+        else:
+            payload = {"message": "Unable to create recommendation rule"}
+            result = 400
+
+    except Exception as error:
+        logging.error(f"[platform_recommendation_rules_post] Error: {error}")
+        print(error)
+        result = 500
+        payload = {"message": "An unexpected error occurred while creating the recommendation rule"}
+
+    return jsonify(payload), result
+
+
+def platform_recommendation_rules_id_put(id, body):  # noqa: E501
+    """Update an existing recommendation rule
+
+     # noqa: E501
+
+    :param id: 
+    :type id: int
+    :param body: 
+    :type body: dict | bytes
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message": generic_message}
+
+    try:
+        logging.info(f"[platform_recommendation_rules_id_put] Updating recommendation rule id={id}")
+        
+        try:
+            rule_id = int(id)
+        except (TypeError, ValueError):
+            payload = {"message": "Invalid rule ID"}
+            return jsonify(payload), result
+
+        rule = RecommendationRule.get_by_id(rule_id)
+        if not rule:
+            payload = {"message": "Recommendation rule not found"}
+            return jsonify(payload), 404
+
+        request_json = connexion.request.get_json() if connexion.request.is_json else (body or {})
+
+        # Update fields if provided
+        software_category_id = None
+        hardware_category_id = None
+
+        if "software_category" in request_json:
+            try:
+                software_category_id = int(request_json["software_category"])
+                # Validate category exists
+                software_cat = SoftwareCategory.get_by_id(software_category_id)
+                if not software_cat:
+                    payload = {"message": "Invalid software_category ID", "code": "INVALID_CATEGORY"}
+                    return jsonify(payload), result
+                rule.software_category_id = software_category_id
+            except (TypeError, ValueError):
+                payload = {"message": "Invalid software_category ID format"}
+                return jsonify(payload), result
+
+        if "hardware_category" in request_json:
+            try:
+                hardware_category_id = int(request_json["hardware_category"])
+                # Validate category exists
+                hardware_cat = HardwareCategory.get_by_id(hardware_category_id)
+                if not hardware_cat:
+                    payload = {"message": "Invalid hardware_category ID", "code": "INVALID_CATEGORY"}
+                    return jsonify(payload), result
+                rule.hardware_category_id = hardware_category_id
+            except (TypeError, ValueError):
+                payload = {"message": "Invalid hardware_category ID format"}
+                return jsonify(payload), result
+
+        if "is_mandatory" in request_json:
+            if not isinstance(request_json["is_mandatory"], bool):
+                payload = {"message": "is_mandatory must be a boolean"}
+                return jsonify(payload), result
+            rule.is_mandatory = request_json["is_mandatory"]
+
+        if "quantity" in request_json:
+            quantity = int(request_json["quantity"])
+            if quantity < 1:
+                payload = {"message": "quantity must be >= 1", "code": "INVALID_QUANTITY"}
+                return jsonify(payload), result
+            rule.quantity = quantity
+
+        # Check for duplicate if categories are being updated
+        if software_category_id is not None or hardware_category_id is not None:
+            final_software_id = software_category_id if software_category_id is not None else rule.software_category_id
+            final_hardware_id = hardware_category_id if hardware_category_id is not None else rule.hardware_category_id
+            
+            existing_rule = RecommendationRule.get_by_categories(final_software_id, final_hardware_id, exclude_id=rule_id)
+            if existing_rule:
+                payload = {
+                    "message": "Recommendation rule already exists for this software and hardware category combination",
+                    "code": "DUPLICATE_RULE"
+                }
+                return jsonify(payload), 409
+
+        try:
+            if rule.update_row():
+                payload = {
+                    "message": "Recommendation rule updated successfully",
+                    "data": rule.to_dict()
+                }
+                result = 200
+            else:
+                payload = {"message": "Unable to update recommendation rule"}
+                result = 400
+        except IntegrityError as e:
+            db.session.rollback()
+            logging.error(f"[platform_recommendation_rules_id_put] IntegrityError: {str(e)}")
+            payload = {
+                "message": "Recommendation rule already exists for this software and hardware category combination",
+                "code": "DUPLICATE_RULE"
+            }
+            result = 409
+        except Exception as db_error:
+            db.session.rollback()
+            logging.error(f"[platform_recommendation_rules_id_put] Database error: {str(db_error)}")
+            payload = {"message": "Unable to update recommendation rule due to database error"}
+            result = 500
+
+    except ValueError as ve:
+        logging.error(f"[platform_recommendation_rules_id_put] ValueError: {str(ve)}")
+        payload = {"message": f"Invalid input: {str(ve)}"}
+        result = 400
+    except Exception as error:
+        logging.error(f"[platform_recommendation_rules_id_put] Error: {error}")
+        print(error)
+        result = 500
+        payload = {"message": "An unexpected error occurred while updating the recommendation rule"}
+
+    return jsonify(payload), result
+
+
+def platform_recommendation_rules_id_delete(id):  # noqa: E501
+    """Delete a recommendation rule
+
+     # noqa: E501
+
+    :param id: 
+    :type id: int
+
+    :rtype: Union[object, Tuple[object, int], Tuple[object, int, Dict[str, str]]
+    """
+    result = 400
+    payload = {"message": generic_message}
+
+    try:
+        logging.info(f"[platform_recommendation_rules_id_delete] Deleting recommendation rule id={id}")
+        
+        try:
+            rule_id = int(id)
+        except (TypeError, ValueError):
+            payload = {"message": "Invalid rule ID"}
+            return jsonify(payload), result
+
+        rule = RecommendationRule.get_by_id(rule_id)
+        if not rule:
+            payload = {"message": "Recommendation rule not found"}
+            return jsonify(payload), 404
+
+        try:
+            if rule.delete_row():
+                payload = {"message": "Recommendation rule deleted successfully"}
+                result = 200
+            else:
+                payload = {"message": "Unable to delete recommendation rule"}
+                result = 400
+        except Exception as db_error:
+            db.session.rollback()
+            logging.error(f"[platform_recommendation_rules_id_delete] Database error: {str(db_error)}")
+            payload = {"message": "Unable to delete recommendation rule due to database error"}
+            result = 500
+
+    except Exception as error:
+        logging.error(f"[platform_recommendation_rules_id_delete] Error: {error}")
+        print(error)
+        result = 500
+        payload = {"message": "An unexpected error occurred while deleting the recommendation rule"}
+
+    return jsonify(payload), result
+
+
 def platform_software_modules_post(body):  # noqa: E501
     """Create a new software module
 
