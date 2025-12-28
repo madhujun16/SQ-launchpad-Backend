@@ -133,11 +133,38 @@ Ensure that:
 ### Error: "Unknown column type 'JSON'"
 Your database version doesn't support JSON. See "If JSON Type is Not Supported" section above.
 
-### Error: "Access denied"
-Ensure your database user has:
+### Error: "Access denied" or "CREATE command denied"
+**This is a permissions issue.** Your database user doesn't have CREATE TABLE permissions.
+
+**Solution Options:**
+
+#### Option 1: Grant Permissions (Requires Admin Access)
+Have a database administrator run:
+```sql
+-- Grant CREATE privilege
+GRANT CREATE ON DATABASE_NAME.* TO 'sarthak'@'localhost';
+
+-- Or grant all privileges (if appropriate)
+GRANT ALL PRIVILEGES ON DATABASE_NAME.* TO 'sarthak'@'localhost';
+
+-- Apply changes
+FLUSH PRIVILEGES;
+```
+
+#### Option 2: Run Script as Admin User
+Have a database administrator (with CREATE privileges) run the migration script instead.
+
+#### Option 3: Let Application Create Tables (Recommended)
+The application automatically creates tables on startup. Simply:
+1. Ensure your application has a database user with CREATE privileges
+2. Restart the application
+3. Tables will be created automatically
+
+**Required Permissions:**
 - `CREATE` privilege (to create tables)
 - `INDEX` privilege (to create indexes)
 - `REFERENCES` privilege (to create foreign keys)
+- `ALTER` privilege (to modify tables if needed)
 
 ## Verification Checklist
 

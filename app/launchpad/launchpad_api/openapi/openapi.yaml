@@ -504,6 +504,128 @@ paths:
       tags:
       - scoping-approval
       x-openapi-router-controller: app.launchpad.launchpad_api.controllers.scoping_approval_controller
+  /site/{site_id}/procurement:
+    get:
+      operationId: site_procurement_get
+      parameters:
+      - in: path
+        name: site_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Successfully fetched procurement data
+        "401":
+          description: Unauthorized
+        "404":
+          description: Procurement data or site not found
+      summary: Get procurement data for a site
+      tags:
+      - procurement
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.procurement_controller
+    put:
+      operationId: site_procurement_put
+      parameters:
+      - in: path
+        name: site_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                delivery_date:
+                  type: string
+                  format: date
+                  description: ISO date string (YYYY-MM-DD)
+                delivery_receipt_url:
+                  type: string
+                  description: URL to uploaded receipt file
+                summary:
+                  type: string
+                  description: Text summary of procurement
+                status:
+                  type: string
+                  enum: [draft]
+                  default: draft
+                  description: Must be 'draft' for this endpoint
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Procurement data updated successfully
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "404":
+          description: Site not found
+      summary: Update procurement data (save as draft)
+      tags:
+      - procurement
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.procurement_controller
+  /site/{site_id}/procurement/complete:
+    post:
+      operationId: site_procurement_complete_post
+      parameters:
+      - in: path
+        name: site_id
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - delivery_date
+                - delivery_receipt_url
+                - summary
+              properties:
+                delivery_date:
+                  type: string
+                  format: date
+                  description: ISO date string (YYYY-MM-DD)
+                delivery_receipt_url:
+                  type: string
+                  description: URL to uploaded receipt file
+                summary:
+                  type: string
+                  description: Text summary of procurement (non-empty)
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Procurement marked as complete successfully
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden (not Admin or Deployment Engineer)
+        "404":
+          description: Site not found
+        "422":
+          description: Validation errors
+      summary: Mark procurement as complete (Admin or Deployment Engineer only)
+      tags:
+      - procurement
+      x-openapi-router-controller: app.launchpad.launchpad_api.controllers.procurement_controller
   /scoping-approvals:
     get:
       operationId: scoping_approvals_get
