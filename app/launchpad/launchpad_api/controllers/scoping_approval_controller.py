@@ -10,6 +10,7 @@ from ..db_models.scoping_approval import ScopingApproval
 from ..db_models.approval_action import ApprovalAction
 from ..db_models.site import Site
 from ..db_models.user import User
+from ..utils.cookie_manager import decrypt_token
 
 # TODO: Define role constants - these should match your role system
 # Assuming: 1=Admin, 2=Operations Manager, 3=Deployment Engineer
@@ -19,17 +20,24 @@ DEPLOYMENT_ENGINEER_ROLE = 3
 
 
 def get_current_user():
-    """Get current user from session/authentication - placeholder for actual auth implementation."""
-    # TODO: Implement actual authentication logic
-    # For now, return a mock user or get from session
-    # This should be replaced with actual authentication
-    user_id = request.headers.get('X-User-Id')  # Placeholder
-    if user_id:
-        try:
-            return User.get_by_id(int(user_id))
-        except:
+    """Get current user from session cookie (same as /api/user/me endpoint)."""
+    try:
+        # Get session cookie
+        token = request.cookies.get('session_id')
+        if not token:
             return None
-    return None
+        
+        # Decode JWT token to get email
+        email = decrypt_token(token)
+        if not email:
+            return None
+        
+        # Get user from database by email
+        user = User.get_by_email(email)
+        return user
+    except Exception as e:
+        logging.error(f"[get_current_user] Error decoding session token: {e}")
+        return None
 
 
 def check_role(user, allowed_roles):
