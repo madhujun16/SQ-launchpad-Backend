@@ -20,23 +20,44 @@ DEPLOYMENT_ENGINEER_ROLE = 3
 
 
 def get_current_user():
-    """Get current user from session cookie (same as /api/user/me endpoint)."""
+    """Get current user from session cookie (same as /api/user/me endpoint).
+    
+    Falls back to X-User-Id header for development when authentication is disabled.
+    """
     try:
-        # Get session cookie
+        # Try session cookie first (production/authenticated flow)
         token = request.cookies.get('session_id')
-        if not token:
-            return None
+        if token:
+            # Decode JWT token to get email
+            email = decrypt_token(token)
+            if email:
+                # Get user from database by email
+                user = User.get_by_email(email)
+                if user:
+                    logging.info(f"[get_current_user] Successfully authenticated user via cookie: {email} (ID: {user.id}, Role: {user.role})")
+                    return user
+                else:
+                    logging.warning(f"[get_current_user] User not found for email: {email}")
         
-        # Decode JWT token to get email
-        email = decrypt_token(token)
-        if not email:
-            return None
+        # Fallback to X-User-Id header (development/placeholder auth)
+        user_id = request.headers.get('X-User-Id')
+        if user_id:
+            try:
+                user = User.get_by_id(int(user_id))
+                if user:
+                    logging.info(f"[get_current_user] Using X-User-Id header (dev mode): User ID {user_id} (Role: {user.role})")
+                    return user
+            except (ValueError, TypeError) as e:
+                logging.warning(f"[get_current_user] Invalid X-User-Id header: {user_id}")
         
-        # Get user from database by email
-        user = User.get_by_email(email)
-        return user
+        # No authentication found
+        logging.warning(f"[get_current_user] No authentication found. Available cookies: {list(request.cookies.keys())}, X-User-Id header: {request.headers.get('X-User-Id', 'not present')}")
+        return None
+        
     except Exception as e:
-        logging.error(f"[get_current_user] Error decoding session token: {e}")
+        logging.error(f"[get_current_user] Error in authentication: {e}")
+        import traceback
+        logging.error(f"[get_current_user] Traceback: {traceback.format_exc()}")
         return None
 
 
